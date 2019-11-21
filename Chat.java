@@ -7,7 +7,9 @@ public class Chat {
     private History history;
     
     public Chat(int cID, String name, ArrayList<User> users) {
-        
+        this.cID = cID;
+        this.name = name;
+        this.users = users;
     }
     
     public int getcID() {
@@ -16,5 +18,16 @@ public class Chat {
     
     public String getName() {
         return name;
+    }
+    
+    // Adds user to users ArrayList.  If the user is already there, returns false.  Otherwise, returns true.
+    public boolean addUser(User user) {
+        if (users.contains(user)) {
+            return false;
+        }
+        else {
+            users.add(user);
+            return true;
+        }
     }
 }

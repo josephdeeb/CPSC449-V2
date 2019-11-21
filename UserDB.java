@@ -4,13 +4,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
-public class UserDB {
-    // Absolute path to the folder containing the db
-	public final String path;
-	// Name of the db file, including the file extension
-	public final String dbName;
-	// File extension of the db file
-	public final String fileExtension;
+public class UserDB extends DB {
 	// List of users
 	public ArrayList<User> users;
 	
@@ -19,43 +13,19 @@ public class UserDB {
 	 * dbName is the name of the db file
 	 */
 	private UserDB(String path, String dbName) {
-		this.path = path;
-		this.dbName = dbName;
-		this.fileExtension = "." + dbName.split("\\.")[1];
+	    super(path, dbName);
+	    users = new ArrayList<User>();
 	}
 	
 	// Returns null if the userdb is not readable or not writable
 	// If the userDB doesn't exist, it creates one, and if it fails to create one, it returns null
 	// path is a path to the folder containing the db, dbName is the name of the db file
 	public static UserDB create(String path, String dbName) {
-	    // First make sure dbName contains no periods other than the file extension so as to not break getdbNameNoExtension()
-	    if (dbName.split("\\.").length != 2) {
-	        System.out.println("ERROR: dbName may contain only one period '.' character");
-	        return null;
+	    UserDB temp = new UserDB(path, dbName);
+	    if (temp.checkCreate()) {
+	        return temp;
 	    }
-	    
-		UserDB returned = new UserDB(path, dbName);
-		
-		// Check if the UserDB file exists and is readable + writable
-		File userDB = new File(returned.getdbPath());
-		if (!userDB.exists()) {
-			try {
-				userDB.createNewFile();
-			} catch (Exception e) {
-				System.out.println(e);
-				return null;
-			}
-		}
-		
-		if (!(Files.isReadable(Paths.get(returned.getdbPath())) && Files.isWritable(Paths.get(returned.getdbPath()))))
-			return null;
-		
-		else
-			return returned;
-	}
-	
-	public String getdbPath() {
-	    return this.path + File.separator + this.dbName;
+	    return null;
 	}
 	
 	/*
@@ -82,12 +52,6 @@ public class UserDB {
 		}
 	}
 	*/
-	
-	// Returns dbName minus the file extension
-	// Make sure dbName contains no dots other than the file extension
-	public String getdbNameNoExtension() {
-	    return this.dbName.split("\\.")[0];
-	}
 	
 	// Saves users to a new db file
 	public boolean saveAllUsers() {
@@ -152,37 +116,4 @@ public class UserDB {
 		return true;
 	}
 	
-	/*
-	 * Function that returns file for the next save, and renames the old file
-	 */
-	public File getNextFile() {
-	    File db = new File(this.getdbPath());
-	    File dbOld = new File(this.getdbNameNoExtension() + "OLD" + this.fileExtension);
-	    
-	    // if the dbOld file already exists, delete it
-	    if (dbOld.exists())
-	        dbOld.delete();
-	    
-	    // Try to rename the current db file to be the old db file
-	    if (db.renameTo(dbOld)) {
-	        // If successful, create a new db file and try to create it
-	        File nextdb = new File(this.getdbPath());
-	        try {
-	            if (nextdb.createNewFile()) {
-	                nextdb.setReadable(true);
-	                nextdb.setWritable(true);
-	                return nextdb;
-	            }
-	            else
-	                throw new IOException("ERROR: Could not create new db file");
-	        } catch (Exception e) {
-	            System.out.println(e);
-	            return null;
-	        }
-	    }
-	    // Otherwise, we couldn't rename the current db file so return null
-	    // Keep in mind the old db file will still be deleted regardless of if we successfully rename the current db file
-	    else
-	        return null;
-	}
 }
