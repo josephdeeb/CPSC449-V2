@@ -5,7 +5,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 
 public class UserDB {
-    // Path to the folder containing the db
+    // Absolute path to the folder containing the db
 	public final String path;
 	// Name of the db file, including the file extension
 	public final String dbName;
@@ -58,6 +58,7 @@ public class UserDB {
 	    return this.path + File.separator + this.dbName;
 	}
 	
+	/*
 	// NOT FINISHED
 	public ArrayList<User> getAllUsers() {
 		File db = new File(this.getdbPath());
@@ -80,6 +81,7 @@ public class UserDB {
 			return null;
 		}
 	}
+	*/
 	
 	// Returns dbName minus the file extension
 	// Make sure dbName contains no dots other than the file extension
