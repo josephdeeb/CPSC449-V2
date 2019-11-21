@@ -21,7 +21,7 @@ public class UserDB {
 	private UserDB(String path, String dbName) {
 		this.path = path;
 		this.dbName = dbName;
-		this.fileExtension = "." + dbName.split(".")[1];
+		this.fileExtension = "." + dbName.split("\\.")[1];
 	}
 	
 	// Returns null if the userdb is not readable or not writable
@@ -29,7 +29,7 @@ public class UserDB {
 	// path is a path to the folder containing the db, dbName is the name of the db file
 	public static UserDB create(String path, String dbName) {
 	    // First make sure dbName contains no periods other than the file extension so as to not break getdbNameNoExtension()
-	    if (dbName.split(".").length != 2) {
+	    if (dbName.split("\\.").length != 2) {
 	        System.out.println("ERROR: dbName may contain only one period '.' character");
 	        return null;
 	    }
@@ -86,7 +86,7 @@ public class UserDB {
 	// Returns dbName minus the file extension
 	// Make sure dbName contains no dots other than the file extension
 	public String getdbNameNoExtension() {
-	    return this.dbName.split(".")[0];
+	    return this.dbName.split("\\.")[0];
 	}
 	
 	// Saves users to a new db file
@@ -117,22 +117,34 @@ public class UserDB {
 		    // Next line is the users friends list
 		    // For each friend in the users friends list, append their uID and a comma
 		    line = "";
-		    for (User friend : user.getFriends()) {
-		        line += Integer.toString(friend.getuID()) + ",";
+		    // If the user has friends...
+		    if (!(user.getFriends().size() == 0)) {
+    		    for (User friend : user.getFriends()) {
+    		        line += Integer.toString(friend.getuID()) + ",";
+    		    }
+    		    // Get rid of the last comma in line and write it to the file
+    		    line = line.substring(0, line.length()-1);
+    		    writer.println(line);
 		    }
-		    // Get rid of the last comma in line and write it to the file
-		    line = line.substring(0, line.length()-1);
-		    writer.println(line);
+		    else {
+		        writer.println("");
+		    }
 		    
 		    // Next line is the users chat list
 		    // For each chat in the chat list, append its cID and a comma
 		    line = "";
-		    for (Chat chat : user.getChats()) {
-		        line += Integer.toString(chat.getcID()) + ",";
+		    // If there are actually chats the user is in...
+		    if (!(user.getChats().size() == 0)) {
+    		    for (Chat chat : user.getChats()) {
+    		        line += Integer.toString(chat.getcID()) + ",";
+    		    }
+    		    // Get rid of the last comma in line and write to the file
+                line = line.substring(0, line.length()-1);
+                writer.println(line);
 		    }
-		    // Get rid of the last comma in line and write to the file
-		    line = line.substring(0, line.length()-1);
-		    writer.println(line);
+		    else {
+		        writer.println("");
+		    }
 		}
 		// All data of each user should now be in the file
 		writer.close();
@@ -145,7 +157,7 @@ public class UserDB {
 	 */
 	public File getNextFile() {
 	    File db = new File(this.getdbPath());
-	    File dbOld = new File(this.getdbNameNoExtension() + "." + this.fileExtension);
+	    File dbOld = new File(this.getdbNameNoExtension() + "OLD" + this.fileExtension);
 	    
 	    // if the dbOld file already exists, delete it
 	    if (dbOld.exists())

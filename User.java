@@ -47,4 +47,14 @@ public class User {
 	    return chats;
 	}
 	
+	public boolean addFriend(User friend) {
+	    if (friends.contains(friend)) {
+	        return false;
+	    }
+	    else {
+	        friends.add(friend);
+	        return true;
+	    }
+	}
+	
 }
