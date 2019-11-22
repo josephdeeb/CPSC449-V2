@@ -1,6 +1,11 @@
 import java.util.*;
 
 public class User {
+    /*
+     * IMPORTANT NOTICE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+     * DO NOT CHANGE ANY OF THE TYPES OR ADD ANY NEW INSTANCE VARIABLES TO THIS CLASS WITHOUT FIRST CONSULTING JOSEPH
+     * UserDB RELIES ON uID, username, password, friends, AND chats HAVING THESE EXACT TYPES AND NAMES
+     */
     private int uID;
     // username cannot contain any commas
 	private String username;
