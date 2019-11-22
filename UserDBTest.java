@@ -31,8 +31,37 @@ public class UserDBTest {
         db.saveAllUsers();
         
         users = db.loadAllUsers();
+        String line = "";
         for (User user : users) {
-            System.out.println("uID=" + user.getuID() + "\nusername=" + user.getusername() + "\npassword=" + user.getpassword() + "\n");
+            System.out.println("uID=" + user.getuID() + "\nusername=" + user.getusername() + "\npassword=" + user.getpassword());
+            for (int i : user.getFriends()) {
+                line += Integer.toString(i) + ", ";
+            }
+            System.out.println("Friends=" + line.substring(0, line.length()-1) + "\n");
+            line = "";
         }
+        
+        // Testing stuff for Chat saving / loading
+        
+        ChatDB chat0 = ChatDB.create(new File("").getAbsolutePath(), 0, "chat0");
+        
+        chat0.addUser(0);
+        chat0.addUser(1);
+        chat0.addUser(2);
+        
+        Message msg0 = new Message("Haha", 0);
+        Message msg1 = new Message("why did the chicken cross the road", 1);
+        chat0.addMessage(msg0);
+        chat0.addMessage(msg1);
+        
+        chat0.saveChat();
+        
+        ChatDB chatLoaded = ChatDB.loadChat(new File("").getAbsolutePath(), 0);
+        System.out.println("done");
+        
+        Message msg2 = new Message("stuff", 0);
+        chatLoaded.addMessage(msg2);
+        
+        chatLoaded.saveChat();
     }
 }

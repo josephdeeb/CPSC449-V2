@@ -29,6 +29,7 @@ public class UserDB extends DB {
 	}
 	
 	public ArrayList<User> loadAllUsers() {
+	    BufferedReader reader = null;
 		File db = new File(this.getdbPath());
 		ArrayList<User> temp = new ArrayList<User>();
 		try {
@@ -37,7 +38,7 @@ public class UserDB extends DB {
 				throw new IOException("ERROR: getAllUsers() failed because the database stored in UserDB.path doesn't exist");
 			
 			// Then establish the reader
-			BufferedReader reader = new BufferedReader(new FileReader(db));
+			reader = new BufferedReader(new FileReader(db));
 			
 			// Next, create the ArrayList
 			String line;
@@ -109,9 +110,18 @@ public class UserDB extends DB {
 			}
 			
 			// All the user data should now be in temp.  Time to return!
+			reader.close();
 			return temp;
 		} catch (Exception e) {
 			System.out.println(e);
+			
+			try {
+			    reader.close();
+			} catch (Exception f) {
+			    System.out.println(f);
+			    return null;
+			}
+			
 			return null;
 		}
 	}

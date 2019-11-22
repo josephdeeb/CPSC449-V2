@@ -59,7 +59,7 @@ public abstract class DB {
      */
     public File getNextFile() {
         File db = new File(this.getdbPath());
-        File dbOld = new File(this.getdbNameNoExtension() + "OLD" + this.fileExtension);
+        File dbOld = new File(this.path + File.separator + this.getdbNameNoExtension() + "OLD" + this.fileExtension);
         
         // if the dbOld file already exists, delete it
         if (dbOld.exists())
