@@ -11,14 +11,14 @@ public class UserDBTest {
         User user3 = User.create(2, "brian", "password");
         User user4 = User.create(3, "layla", "stuffs");
         
-        user1.addFriend(user2);
-        user2.addFriend(user1);
-        user2.addFriend(user3);
-        user3.addFriend(user2);
-        user3.addFriend(user4);
-        user4.addFriend(user3);
-        user4.addFriend(user1);
-        user1.addFriend(user4);
+        user1.addFriend(1);
+        user2.addFriend(0);
+        user2.addFriend(2);
+        user3.addFriend(1);
+        user3.addFriend(3);
+        user4.addFriend(2);
+        user4.addFriend(0);
+        user1.addFriend(3);
         
         ArrayList<User> users = new ArrayList<User>();
         users.add(user1);
@@ -29,5 +29,10 @@ public class UserDBTest {
         db.users = users;
         
         db.saveAllUsers();
+        
+        users = db.loadAllUsers();
+        for (User user : users) {
+            System.out.println("uID=" + user.getuID() + "\nusername=" + user.getusername() + "\npassword=" + user.getpassword() + "\n");
+        }
     }
 }
