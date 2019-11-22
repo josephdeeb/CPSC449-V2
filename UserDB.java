@@ -28,7 +28,6 @@ public class UserDB extends DB {
 	    return null;
 	}
 	
-	// NOT FINISHED
 	public ArrayList<User> loadAllUsers() {
 		File db = new File(this.getdbPath());
 		ArrayList<User> temp = new ArrayList<User>();
