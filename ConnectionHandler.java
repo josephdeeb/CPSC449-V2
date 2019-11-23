@@ -140,6 +140,7 @@ public class ConnectionHandler {
 
                             // Next, pass the buffer off to handleMessage which will, y'know, handle the message
                             if (!handleMessage(inBuffer, cchannel)) {
+                                Server.disconnectUser(cchannel);
                                 key.cancel();
                                 continue;
                             }
@@ -209,7 +210,9 @@ public class ConnectionHandler {
         short type = message.getShort();
         int port = sock.socket().getPort();
         switch(type) {
+            // login
         	case 1:
+        	    
         		break;
         	case 2:
         		break;

@@ -99,6 +99,9 @@ public class ChatDB extends DB {
         return true;
     }
     
+    /*
+     * path is the root path of the program, not the path to the chat
+     */
     public static ChatDB loadChat(String path, int cID) {
         BufferedReader reader = null;
         File db = new File(path + File.separator + folderName + File.separator + Integer.toString(cID) + ".csv");

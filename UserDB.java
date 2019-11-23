@@ -3,10 +3,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class UserDB extends DB {
 	// List of users
-	public ArrayList<User> users;
+	public HashMap<Integer, User> users;
+	public HashMap<String, Integer> nameToUIDMap;
 	
 	/*
 	 * path is a path to the folder containing the db
@@ -14,7 +17,7 @@ public class UserDB extends DB {
 	 */
 	private UserDB(String path, String dbName) {
 	    super(path, dbName);
-	    users = new ArrayList<User>();
+	    users = new HashMap<Integer, User>();
 	}
 	
 	// Returns null if the userdb is not readable or not writable
@@ -28,10 +31,13 @@ public class UserDB extends DB {
 	    return null;
 	}
 	
-	public ArrayList<User> loadAllUsers() {
+	/*
+	 * Loads users from this UserDB's database file and puts it into users
+	 */
+	public boolean loadAllUsers() {
 	    BufferedReader reader = null;
 		File db = new File(this.getdbPath());
-		ArrayList<User> temp = new ArrayList<User>();
+		HashMap<Integer, User> temp = new HashMap<Integer, User>();
 		try {
 			// First make sure the database file exists
 			if (!db.exists())
@@ -64,6 +70,7 @@ public class UserDB extends DB {
 			        if (tempUser == null)
 			            throw new IOException("ERROR: One of the user info lines contains invalid data for username or password");
 			        
+			        // Add the users username and uID to the 
 			        // Increment counter to get the friends line next
 			        counter++;
 			    }
@@ -91,7 +98,7 @@ public class UserDB extends DB {
 			    else {
 			        // If they have no chats: add the user to temp, set counter to 0, and continue
 			        if (line.trim().equals("")) {
-			            temp.add(tempUser);
+			            temp.put(tempUser.getuID(), tempUser);
 			            counter = 0;
 			            continue;
 			        }
@@ -104,14 +111,15 @@ public class UserDB extends DB {
 			        }
 			        
 			        // Add the user we've been creating to temp (list of users) and set counter to 0 to gather the next users data
-			        temp.add(tempUser);
+			        temp.put(tempUser.getuID(), tempUser);
 			        counter = 0;
 			    }
 			}
 			
 			// All the user data should now be in temp.  Time to return!
 			reader.close();
-			return temp;
+			this.users = temp;
+			return true;
 		} catch (Exception e) {
 			System.out.println(e);
 			
@@ -119,10 +127,10 @@ public class UserDB extends DB {
 			    reader.close();
 			} catch (Exception f) {
 			    System.out.println(f);
-			    return null;
+			    return false;
 			}
 			
-			return null;
+			return false;
 		}
 	}
 	
@@ -147,7 +155,8 @@ public class UserDB extends DB {
 		
 		String line;
 		// Otherwise, we can save this UserDB to file
-		for (User user : users) {
+		for (Map.Entry<Integer, User> me : users.entrySet()) {
+		    User user = me.getValue();
 		    // First line is the users uID, username, and password
 		    writer.println(Integer.toString(user.getuID()) + "," + user.getusername() + "," + user.getpassword());
 		    
@@ -189,4 +198,19 @@ public class UserDB extends DB {
 		return true;
 	}
 	
+	public ArrayList<User> getUsers() {
+	    return new ArrayList<>(users.values());
+	}
+	
+	public User getUser(String username) {
+	    return users.get(nameToUIDMap.get(username));
+	}
+	
+	public User getUser(int uID) {
+	    return users.get(uID);
+	}
+	
+	public int validateUser(String username, String password) {
+	    return this.getUser(username).validate(username, password);
+	}
 }

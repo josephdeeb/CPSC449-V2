@@ -74,4 +74,11 @@ public class User {
 	    }
 	}
 	
+	public int validate(String name, String pass) {
+	    if (name.equals(this.username) && pass.equals(this.password))
+	        return this.uID;
+	    
+	    return -1;
+	}
+	
 }

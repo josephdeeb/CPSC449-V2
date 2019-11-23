@@ -1,5 +1,6 @@
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class UserDBTest {
     public static void main(String[] args) {
@@ -20,19 +21,20 @@ public class UserDBTest {
         user4.addFriend(0);
         user1.addFriend(3);
         
-        ArrayList<User> users = new ArrayList<User>();
-        users.add(user1);
-        users.add(user2);
-        users.add(user3);
-        users.add(user4);
+        HashMap<Integer, User> users = new HashMap<Integer, User>();
+        users.put(user1.getuID(), user1);
+        users.put(user2.getuID(), user2);
+        users.put(user3.getuID(), user3);
+        users.put(user4.getuID(), user4);
         
         db.users = users;
         
         db.saveAllUsers();
         
-        users = db.loadAllUsers();
+        db.loadAllUsers();
         String line = "";
-        for (User user : users) {
+        
+        for (User user : db.getUsers()) {
             System.out.println("uID=" + user.getuID() + "\nusername=" + user.getusername() + "\npassword=" + user.getpassword());
             for (int i : user.getFriends()) {
                 line += Integer.toString(i) + ", ";
