@@ -1,0 +1,16 @@
+/Chat.class
+/ConnectionHandler.class
+/History.class
+/Message.class
+/Server.class
+/User.class
+/UserDB.class
+/UserDBTest.class
+/users.csv
+/usersOLD.csv
+/ChatDB.class
+/DB.class
+/Client.class
+/ClientConnectionHandler.class
+/UI.class
+/UIPacket.class
