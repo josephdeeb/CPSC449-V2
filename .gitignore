@@ -10,3 +10,7 @@
 /usersOLD.csv
 /ChatDB.class
 /DB.class
+/Client.class
+/ClientConnectionHandler.class
+/UI.class
+/UIPacket.class

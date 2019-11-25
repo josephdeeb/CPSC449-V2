@@ -210,7 +210,7 @@ public class ConnectionHandler {
         short type = message.getShort();
         int port = sock.socket().getPort();
         switch(type) {
-            // login
+            // register
         	case 1:
         	    
         		break;
