@@ -10,6 +10,7 @@ public class UserDB extends DB {
 	// List of users
 	public HashMap<Integer, User> users;
 	public HashMap<String, Integer> nameToUIDMap;
+	int highestuID;
 	
 	/*
 	 * path is a path to the folder containing the db
@@ -18,6 +19,8 @@ public class UserDB extends DB {
 	private UserDB(String path, String dbName) {
 	    super(path, dbName);
 	    users = new HashMap<Integer, User>();
+	    nameToUIDMap = new HashMap<String, Integer>();
+	    highestuID = 0;
 	}
 	
 	// Returns null if the userdb is not readable or not writable
@@ -70,7 +73,14 @@ public class UserDB extends DB {
 			        if (tempUser == null)
 			            throw new IOException("ERROR: One of the user info lines contains invalid data for username or password");
 			        
-			        // Add the users username and uID to the 
+			        // Add the users username and uID to the nameToUIDMap
+			        nameToUIDMap.put(tempUser.getusername(), tempUser.getuID());
+			        
+			        // Set highestuID
+			        if (tempUser.getuID() > highestuID) {
+			        	highestuID = tempUser.getuID();
+			        }
+			        
 			        // Increment counter to get the friends line next
 			        counter++;
 			    }
@@ -212,5 +222,18 @@ public class UserDB extends DB {
 	
 	public int validateUser(String username, String password) {
 	    return this.getUser(username).validate(username, password);
+	}
+	
+	public boolean usernameExists(String username) {
+		if (nameToUIDMap.containsKey(username)) {
+			return true;
+		}
+		return false;
+	}
+	
+	public void registerUser(String username, String password) {
+		users.put(highestuID + 1, User.create(highestuID + 1, username, password));
+		nameToUIDMap.put(username, highestuID + 1);
+		highestuID++;
 	}
 }

@@ -212,8 +212,7 @@ public class ConnectionHandler {
         switch(type) {
             // register
         	case 1:
-        	    
-        		break;
+        	    Server.handleRegister(message, sock);
         	case 2:
         		break;
         		
@@ -223,6 +222,18 @@ public class ConnectionHandler {
         }
         
         return true;
+    }
+    
+    public String retrieveString(ByteBuffer msg, int len) {
+    	byte[] temp = new byte[len];
+    	
+    	try {
+    		msg.get(temp);
+    		return new String(temp, "UTF-8");
+    	} catch (Exception e) {
+    		System.out.println(e);
+    		return null;
+    	}
     }
     
     // Shouldn't use this, kinda dangerous, could stall server
@@ -239,6 +250,30 @@ public class ConnectionHandler {
             buf = null;
             return buf;
         }
+    }
+    
+    public boolean sendError(SocketChannel channel) {
+    	ByteBuffer buf = ByteBuffer.allocate(2);
+    	buf.putShort((short)-1);
+    	buf.flip();
+    	return sendMessage(channel, buf);
+    }
+    
+    public int countOccurrences(String message, char character) {
+    	int count = 0;
+    	for (int i = 0; i < message.length(); i++) {
+    		if (message.charAt(i) == character) {
+    			count++;
+    		}
+    	}
+    	return count;
+    }
+    
+    public boolean sendMessage(SocketChannel channel, short message) {
+    	ByteBuffer buf = ByteBuffer.allocate(2);
+    	buf.putShort(message);
+    	buf.flip();
+    	return this.sendMessage(channel, buf);
     }
     
     public boolean sendMessage(SocketChannel channel, byte[] message) {

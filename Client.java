@@ -77,8 +77,9 @@ public class Client {
         buf.clear();
         // Put 1 as a short in to signal the message type
         buf.putShort((short)1);
-        // Next, try to put username,password into buf
+        // Next, put the message length and then try to put username,password into buf
         try {
+        	buf.putInt(msg.length());
             buf.put(msg.getBytes("UTF-8"));
         } catch (Exception e) {
             System.out.println("ERROR: Could not get bytes from the msg in parseRegister");

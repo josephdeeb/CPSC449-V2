@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 
@@ -48,6 +49,7 @@ public class Server {
         
         // Now we run the connection handler
         connectionHandler.run();
+        Server.saveUsers();
         System.out.println("Exiting server...");
     }
     
@@ -111,5 +113,53 @@ public class Server {
         // Lo
         else
             return 2;
+    }
+    
+    public static boolean usernameExists(String username) {
+    	return users.usernameExists(username);
+    }
+    
+    public static void registerUser(String username, String password) {
+    	users.registerUser(username, password);
+    }
+    
+    public static void saveUsers() {
+    	users.saveAllUsers();
+    }
+    
+    public static void handleRegister(ByteBuffer message, SocketChannel sock) {
+	    // Take the length of the next string as an int
+		int len = message.getInt();
+		if (len > 129) {
+			connectionHandler.sendMessage(sock, (short)3);
+		}
+		String userInfo = connectionHandler.retrieveString(message, len);
+		// If the data in the packet sent isn't properly formatted, then we send an error message and break
+		if (userInfo == null) {
+			connectionHandler.sendError(sock);
+			return;
+		}
+		// Otherwise, userInfo now contains the necessary data
+		// Check how many commas the line contains, should only contain one
+		if (connectionHandler.countOccurrences(userInfo, ',') != 1) {
+			connectionHandler.sendMessage(sock, (short)3);
+			return;
+		}
+		if (userInfo.split(",").length != 2) {
+			connectionHandler.sendMessage(sock, (short)3);
+			return;
+		}
+		String username = userInfo.split(",")[0];
+		String password = userInfo.split(",")[1];
+		if (Server.usernameExists(username)) {
+			connectionHandler.sendMessage(sock, (short)2);
+			return;
+		}
+		// Finally all the checks are done
+		else {
+			Server.registerUser(username, password);
+			connectionHandler.sendMessage(sock, (short)1);
+			return;
+		}
     }
 }

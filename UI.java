@@ -7,6 +7,7 @@ public class UI {
     
     public UI() {
         this.input = new Scanner(System.in);
+        input.nextLine();
     }
     
     
@@ -51,12 +52,18 @@ public class UI {
     }
     
     public UIPacket register(short state) {
+    	if (state == -1) {
+    		System.out.println("ERROR: Server tells us we sent a bad message.  Please press enter to continue");
+    		input.nextLine();
+    		return new UIPacket("startup");
+    	}
         // Initial registration
         if (state == 0) {
             String username = "";
             String password = "";
             printTitle("Register a New Account");
             System.out.println("Please enter a username (Cannot contain commas, max 64 characters): ");
+            username = input.nextLine();
             username = input.nextLine();
             System.out.println("\nPlease enter a password (Cannot contain commas, max 64 characters): ");
             password = input.nextLine();
@@ -80,6 +87,9 @@ public class UI {
             System.out.println("The username and/or password you have chosen is invalid.  It may contain invalid characters, or may be too long.\nPlease press enter to return to the main menu");
             input.nextLine();
             return new UIPacket("startup");
+        }
+        else {
+        	return new UIPacket("register");
         }
     }
     
