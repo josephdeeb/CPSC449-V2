@@ -25,9 +25,10 @@ public class UI {
         try {
             selection = input.nextInt();
             if (selection < 1 || selection > 3)
-                throw new IOException("");
+                throw new IOException("ERROR: You did not type a number associated with an available option.");
         } catch (Exception e) {
-            System.out.println("ERROR: You did not type a number associated with an available option.  Please press enter to try again");
+            System.out.println(e);
+            System.out.println("Please press enter to try again");
             input.nextLine();
             return new UIPacket("startup");
         }
@@ -121,7 +122,41 @@ public class UI {
         }
     }
     
+    public UIPacket mainMenu() {
+        int selection = -1;
+        printTitle("Main Menu\nLogged in as " + Client.username);
+        System.out.println("Please choose one of the following options: ");
+        System.out.println("1\t: Chats Menu");
+        System.out.println("2\t: Friends List");
+        System.out.println("3\t: Account Settings");
+        System.out.println("4\t: Logout");
+        try {
+            selection = input.nextInt();
+            if (selection < 1 || selection > 4)
+                throw new IOException("ERROR: You did not type a number associated with an available option.");
+        } catch (Exception e) {
+            System.out.println(e);
+            System.out.println("Please press enter to try again");
+            input.nextLine();
+            return new UIPacket("mainmenu");
+        }
+        
+        switch (selection) {
+            case 1:
+                return new UIPacket("chatsmenu");
+            case 2:
+                return new UIPacket("friendslist");
+            case 3:
+                return new UIPacket("accountsettings");
+            case 4:
+                return new UIPacket("logout");
+            default:
+                System.out.println("This should've been impossible to reach...");
+                return new UIPacket("mainmenu");
+        }
+    }
+    
     public void printTitle(String title) {
-        System.out.println("\n____________\n" + title + "\n____________\n");
+        System.out.println("\n____________\n\n" + title + "\n____________\n");
     }
 }

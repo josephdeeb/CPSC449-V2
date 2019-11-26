@@ -8,6 +8,7 @@ public class Client {
     private static UI ui;
     private static boolean running;
     private static ByteBuffer buf;
+    public static String username = "";
     
     public static void main(String[] args) {
         if (args.length != 2) {
@@ -53,6 +54,9 @@ public class Client {
                 running = false;
                 nextUI = null;
                 break;
+                
+            case "mainmenu":
+                nextUI = parseMainMenu();
                 
             default:
                 nextUI = "exit";
@@ -114,8 +118,14 @@ public class Client {
         
         short type = response.getShort();
         // 1 means successful registration
+        if (type == 1) {
+            username = temp.args[0];
+        }
         return ui.register(type).nextUI;
     }
     
+    private static String parseMainMenu() {
+        return ui.mainMenu().nextUI;
+    }
     
 }
