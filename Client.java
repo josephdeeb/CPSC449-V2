@@ -67,7 +67,25 @@ public class Client {
     }
     
     private static String parseLogin() {
+        UIPacket temp = ui.login((short)0);
+        String msg = temp.args[0] + "," + temp.args[1];
+        buf.clear();
+        buf.putShort((short)2);
+        try {
+        	buf.putInt(msg.length());
+        	buf.put(msg.getBytes("UTF-8"));
+        } catch (Exception e) {
+        	System.out.println("Couldn't get bytes from the msg in parseLogin()");
+        	return "startup";
+        }
         
+        buf.flip();
+        clientConnectionHandler.sendMessage(buf);
+        
+        ByteBuffer response = clientConnectionHandler.receiveMessage();
+        short type = response.getShort();
+        
+        return ui.login(type).nextUI;
     }
     
     private static String parseRegister() {

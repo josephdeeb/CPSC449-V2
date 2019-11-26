@@ -162,4 +162,38 @@ public class Server {
 			return;
 		}
     }
+    
+    public static void handleLogin(ByteBuffer message, SocketChannel sock) {
+    	String username;
+    	String password;
+    	int len = message.getInt();
+    	String userInfo = connectionHandler.retrieveString(message, len);
+    	if (userInfo == null) {
+    		connectionHandler.sendError(sock);
+    		return;
+    	}
+    	
+    	if (connectionHandler.countOccurrences(userInfo, ',') != 1) {
+    		connectionHandler.sendMessage(sock, (short)2);
+    		return;
+    	}
+    	
+    	if (userInfo.split(",").length != 2) {
+    		connectionHandler.sendMessage(sock, (short)2);
+    		return;
+    	}
+    	
+    	username = userInfo.split(",")[0];
+    	password = userInfo.split(",")[1];
+    	int uID = users.validateUser(username, password);
+    	if (uID == -1) {
+    		connectionHandler.sendMessage(sock,  (short)2);
+    		return;
+    	}
+    	
+    	socketToUIDMap.put(sock, uID);
+    	
+    	connectionHandler.sendMessage(sock, (short)1);
+    	return;
+    }
 }

@@ -213,7 +213,9 @@ public class ConnectionHandler {
             // register
         	case 1:
         	    Server.handleRegister(message, sock);
+        	    break;
         	case 2:
+        		Server.handleLogin(message, sock);
         		break;
         		
         default:

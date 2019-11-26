@@ -47,8 +47,36 @@ public class UI {
         }
     }
     
-    public UIPacket login() {
-        
+    public UIPacket login(short state) {
+    	String username;
+    	String password;
+    	if (state == -1) {
+    		System.out.println("ERROR: Server tells us we sent a bad message.  Please press enter to continue");
+    		input.nextLine();
+    		return new UIPacket("startup");
+    	}
+    	if (state == 0) {
+	        printTitle("Login");
+	        System.out.println("Please enter your username:");
+	        username = input.nextLine();
+	        username = input.nextLine();
+	        System.out.println("Please enter your password:");
+	        password = input.nextLine();
+	        return new UIPacket("login", new String[] {username, password});
+    	}
+    	else if (state == 1) {
+    		System.out.println("Login successful!  Please press enter to continue");
+    		input.nextLine();
+    		return new UIPacket("mainmenu");
+    	}
+    	
+    	else if (state == 2) {
+    		System.out.println("ERROR: Invalid username and password combination.  Please press enter to continue");
+    		input.nextLine();
+    		return new UIPacket("startup");
+    	}
+    	
+    	return new UIPacket("startup");
     }
     
     public UIPacket register(short state) {
@@ -94,6 +122,6 @@ public class UI {
     }
     
     public void printTitle(String title) {
-        System.out.println("\n____________" + title + "\n____________\n");
+        System.out.println("\n____________\n" + title + "\n____________\n");
     }
 }
