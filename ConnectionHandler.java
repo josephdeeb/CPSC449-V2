@@ -218,6 +218,18 @@ public class ConnectionHandler {
         	case 2:
         		Server.handleLogin(message, sock);
         		break;
+        	// create chat
+            case 17:
+                Server.handleCreateChat(message, sock);
+                break;
+            // add chat user
+            case 18:
+                Server.handleAddChatUser(message, sock);
+                break;
+            // get chat list
+            case 20:
+                Server.handleGetChatList(message, sock);
+                break;
         	// upload file
         	case 300:
         	    Server.handleUpload(message, sock);

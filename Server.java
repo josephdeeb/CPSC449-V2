@@ -286,4 +286,13 @@ public class Server {
         
         return;
     }
+
+	public static void handleCreateChat(ByteBuffer message, SocketChannel sock) {
+	}
+
+	public static void handleAddChatUser(ByteBuffer message, SocketChannel sock) {
+	}
+
+	public static void handleGetChatList(ByteBuffer message, SocketChannel sock) {
+	}
 }
