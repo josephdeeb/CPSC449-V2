@@ -2,6 +2,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Server {
@@ -288,9 +289,40 @@ public class Server {
     }
 
 	public static void handleCreateChat(ByteBuffer message, SocketChannel sock) {
-	}
+        int len = message.getInt();
+        String chatName = connectionHandler.retrieveString(message, len);
 
+        String chatPath = "" + File.separator + ChatDB.folderName;
+        int CID = new File (chatPath).list().length;
+
+        ChatDB.create("", CID, chatName);
+        ChatDB cdb = ChatDB.loadChat(chatPath, CID);
+
+        cdb.addUser(socketToUIDMap.get(sock));
+        cdb.saveChat();
+        chats.put(CID, cdb);
+
+        //TODO add return message
+    }
+    //TODO add return messages
 	public static void handleAddChatUser(ByteBuffer message, SocketChannel sock) {
+        int CID = message.getInt();
+        int UID = message.getInt();
+        int SUID = socketToUIDMap.get(sock);
+        ChatDB cdb = chats.get(CID);
+        ArrayList<Integer> chatUsers = cdb.getUsers();
+        if (chatUsers.contains(UID)) {
+            // Send error message, user already a member
+            return;
+        }
+        if (chatUsers.contains(SUID)) {
+            cdb.addUser(UID);
+            // Send success message
+        }
+        else {
+            // Send you are not a member message
+        }
+
 	}
 
 	public static void handleGetChatList(ByteBuffer message, SocketChannel sock) {
