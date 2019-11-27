@@ -133,7 +133,7 @@ public class UI {
         System.out.println("4\t: Logout");
         try {
             selection = input.nextInt();
-            if (selection < 1 || selection > 5)
+            if (selection < 1 || selection > 4)
                 throw new IOException("ERROR: You did not type a number associated with an available option.");
         } catch (Exception e) {
             System.out.println(e);
@@ -151,8 +151,6 @@ public class UI {
                 return new UIPacket("accountsettings");
             case 4:
                 return new UIPacket("logout");
-            case 5:
-                return new UIPacket("uploadfile");
             default:
                 System.out.println("This should've been impossible to reach...");
                 return new UIPacket("mainmenu");
