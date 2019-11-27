@@ -47,6 +47,10 @@ public class Server {
             return;
         }
         
+        // Next create the socketToUIDMap and chats
+        chats = new HashMap<Integer, ChatDB>();
+        socketToUIDMap = new HashMap<SocketChannel, Integer>();
+        
         // Now we run the connection handler
         connectionHandler.run();
         Server.saveUsers();
@@ -195,5 +199,91 @@ public class Server {
     	
     	connectionHandler.sendMessage(sock, (short)1);
     	return;
+    }
+    
+    public static void handleUpload(ByteBuffer message, SocketChannel sock) {
+        // first check if the user is already transferring a file
+        User userTemp = users.getUser(socketToUIDMap.get(sock));
+        if (userTemp.isTransferringFile()) {
+            connectionHandler.sendMessage(sock, (short)-1);
+            return;
+        }
+        // Create the files directory if it doesn't already exist
+        String path = new File("").getAbsolutePath() + File.separator + "files";
+        new File(path).mkdir();
+        
+        // Get the length of the file, then the length of the filename, then the filename
+        long len = message.getLong();
+        int fileNameLength = message.getInt();
+        byte[] fileNameBytes = new byte[fileNameLength];
+        
+        message.get(fileNameBytes);
+        
+        String fileName = new String(fileNameBytes);
+        
+        // Next, create the actual file if it doesn't exist already
+        try {
+            // If it does exist already, send a message of -1 to the client indicating it already exists
+            if (new File(path).createNewFile() == false) {
+                connectionHandler.sendMessage(sock, (short)-1);
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+            connectionHandler.sendMessage(sock, (short)-1);
+            return;
+        }
+        
+        
+        // Finally, set the file stream
+        userTemp.setFileStream(path);
+        
+        // Set session data for file transfer
+        userTemp.fileSize = len;
+        userTemp.fileBytesTransferred = 0;
+        userTemp.setTransferringFile(true);
+        
+        // Next, send a response of 1 to indicate that the server is ready to accept bytes from the client
+        connectionHandler.sendMessage(sock, (short)1);
+        return;
+    }
+    
+    public static void handleUploadInProgress(ByteBuffer message, SocketChannel sock) {
+        User userTemp = users.getUser(socketToUIDMap.get(sock));
+        // If the user is not currently transferring a file, send a message of -1
+        if (!userTemp.isTransferringFile()) {
+            connectionHandler.sendMessage(sock, (short)-1);
+            return;
+        }
+        
+        // Otherwise, user is currently transferring a file!
+        
+        // Figure out how many bytes to read from this message
+        int bytesToRead = message.getInt();
+        
+        byte[] bytes = new byte[bytesToRead];
+        message.get(bytes);
+        
+        // Now write the bytes we read
+        try {
+            userTemp.getFileStream().write(bytes);
+        } catch (Exception e) {
+            // Could be a source of bugs here
+            System.out.println(e);
+            return;
+        }
+        
+        return;
+    }
+    
+    public static void handleUploadFinish(ByteBuffer message, SocketChannel sock) {
+        // We're done with the upload!  Reset session data for the user and close their file stream
+        User userTemp = users.getUser(socketToUIDMap.get(sock));
+        
+        userTemp.fileSize = 0;
+        userTemp.fileBytesTransferred = 0;
+        userTemp.setTransferringFile(false);
+        userTemp.closeFileStream();
+        
+        return;
     }
 }
