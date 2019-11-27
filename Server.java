@@ -224,7 +224,7 @@ public class Server {
         // Next, create the actual file if it doesn't exist already
         try {
             // If it does exist already, send a message of -1 to the client indicating it already exists
-            if (new File(path).createNewFile() == false) {
+            if (new File(path + File.separator + fileName).createNewFile() == false) {
                 connectionHandler.sendMessage(sock, (short)-1);
             }
         } catch (Exception e) {
@@ -235,7 +235,7 @@ public class Server {
         
         
         // Finally, set the file stream
-        userTemp.setFileStream(path);
+        userTemp.setFileStream(path + File.separator + fileName);
         
         // Set session data for file transfer
         userTemp.fileSize = len;
