@@ -214,9 +214,22 @@ public class ConnectionHandler {
         	case 1:
         	    Server.handleRegister(message, sock);
         	    break;
+        	// login
         	case 2:
         		Server.handleLogin(message, sock);
         		break;
+        	// upload file
+        	case 300:
+        	    Server.handleUpload(message, sock);
+        	    break;
+        	// Mid-progress upload file
+        	case 301:
+        	    Server.handleUploadInProgress(message, sock);
+        	    break;
+        	// Upload file finish
+        	case 302:
+        	    Server.handleUploadFinish(message, sock);
+        	    break;
         		
         default:
             // should never hit this

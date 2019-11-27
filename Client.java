@@ -1,5 +1,10 @@
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class Client {
     public static final int MAX_MESSAGE_SIZE = 4096;
@@ -57,6 +62,23 @@ public class Client {
                 
             case "mainmenu":
                 nextUI = parseMainMenu();
+                break;
+                
+            case "chatsmenu":
+                nextUI = parseChatsMenu();
+                break;
+                
+            case "friendslist":
+                nextUI = parseFriendsList();
+                break;
+                
+            case "accountsettings":
+                nextUI = parseAccountSettings();
+                break;
+                
+            case "uploadfile":
+                nextUI = parseUploadFile();
+                break;
                 
             default:
                 nextUI = "exit";
@@ -122,6 +144,114 @@ public class Client {
             username = temp.args[0];
         }
         return ui.register(type).nextUI;
+    }
+    
+    private static String parseChatsMenu() {
+        
+    }
+    
+    private static String parseFriendsList() {
+        
+    }
+    
+    private static String parseAccountSettings() {
+        
+    }
+    
+    private static String parseUploadFile() {
+        UIPacket temp = ui.uploadFile();
+        // If it returned mainmenu, then go back to the mainmenu
+        if (temp.nextUI.equals("mainmenu")) {
+            return "mainmenu";
+        }
+        
+        try {
+            // First put msg type (300), then the length of the file as a long, then the length of the file name + the file name
+            ByteBuffer message = ByteBuffer.allocate(MAX_MESSAGE_SIZE);
+            File file = new File(temp.args[0]);
+            long bytes = file.length();
+            message.putShort((short)300);
+            message.putLong(bytes);
+            
+            String fileName = file.getName();
+            byte[] b = fileName.getBytes();
+            int fileNameSize = b.length;
+            
+            message.putInt(fileNameSize);
+            message.put(b);
+            
+            message.flip();
+            // Send our message
+            clientConnectionHandler.sendMessage(message);
+            // Await the response
+            message = clientConnectionHandler.receiveMessage();
+            short response = message.getShort();
+            
+            if (response == -1) {
+                System.out.println("ERROR: A file with that name already exists on the server");
+                System.out.println("Please press enter to continue");
+                ui.input.nextLine();
+                return "mainmenu";
+            }
+            else if (response == 1) {
+                System.out.println("Starting file transfer...");
+            }
+            else if (response == 2) {
+                System.out.println("ERROR: Server cannot accept your file.");
+                System.out.println("Please press enter to continue");
+                ui.input.nextLine();
+                return "mainmenu";
+            }
+            else {
+                System.out.println("ERROR: Unknown error type");
+                System.out.println("Please press enter to return to the main menu");
+                ui.input.nextLine();
+                return "mainmenu";
+            }
+            
+        } catch (Exception e) {
+            System.out.println(e);
+            System.out.println("Please press enter to continue");
+            ui.input.nextLine();
+            return "mainmenu";
+        }
+        
+        try {
+            ByteBuffer buf = ByteBuffer.allocate(MAX_MESSAGE_SIZE);
+            // b is size - 6 because it the first 6 bytes are the message type and then amount of bytes in the message as an integer
+            byte[] b = new byte[MAX_MESSAGE_SIZE-6];
+            InputStream is = new FileInputStream(temp.args[0]);
+            int readBytes = 0;
+            
+            while ((readBytes = is.read(b)) != -1) {
+                // Put message type as 301 (file transfer in progress)
+                buf.putShort((short)301);
+                // Put the amount of bytes read as an int (4 bytes)
+                buf.putInt(readBytes);
+                // Then put the actual bytes from the file
+                buf.put(b, 0, readBytes);
+                // Flip the buffer to prepare it for read operations
+                buf.flip();
+                // Finally, send the buffer as a message to the server
+                clientConnectionHandler.sendMessage(buf);
+                buf.clear();
+            }
+            
+            // Once we've finished sending the file, send the teardown message
+            buf.putShort((short)302);
+            buf.flip();
+            clientConnectionHandler.sendMessage(buf);
+            System.out.println("File upload successful!");
+            System.out.println("Please press enter to return to the main menu");
+            ui.input.nextLine();
+            return "mainmenu";
+            
+        } catch (Exception e) {
+            System.out.println(e);
+            System.out.println("Please press enter to continue");
+            ui.input.nextLine();
+            return "mainmenu";
+        }
     }
     
     private static String parseMainMenu() {

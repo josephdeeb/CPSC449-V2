@@ -1,4 +1,5 @@
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Scanner;
 
@@ -132,7 +133,7 @@ public class UI {
         System.out.println("4\t: Logout");
         try {
             selection = input.nextInt();
-            if (selection < 1 || selection > 4)
+            if (selection < 1 || selection > 5)
                 throw new IOException("ERROR: You did not type a number associated with an available option.");
         } catch (Exception e) {
             System.out.println(e);
@@ -146,13 +147,35 @@ public class UI {
                 return new UIPacket("chatsmenu");
             case 2:
                 return new UIPacket("friendslist");
-            case 3:
+            case 3: 
                 return new UIPacket("accountsettings");
             case 4:
                 return new UIPacket("logout");
+            case 5:
+                return new UIPacket("uploadfile");
             default:
                 System.out.println("This should've been impossible to reach...");
                 return new UIPacket("mainmenu");
+        }
+    }
+    
+    public UIPacket uploadFile() {
+        printTitle("Upload File");
+        System.out.println("Please enter the path of the file you wish to upload: ");
+        String filePath = input.nextLine();
+        filePath = input.nextLine();
+        File temp;
+        try {
+            temp = new File(filePath);
+            if (!temp.exists()) {
+                throw new IOException("ERROR: The chosen file does not exist");
+            }
+            return new UIPacket("uploadFile", new String[] {filePath});
+        } catch (Exception e) {
+            System.out.println(e);
+            System.out.println("Please press enter to return to the main menu");
+            input.nextLine();
+            return new UIPacket("mainmenu");
         }
     }
     

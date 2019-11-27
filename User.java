@@ -1,3 +1,6 @@
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.*;
 
 public class User {
@@ -11,9 +14,15 @@ public class User {
 	private String username;
 	// password cannot contain any commas
 	private String password;
-	private boolean isLoggedIn;
 	private ArrayList<Integer> friends;
 	private ArrayList<Integer> chats;
+	
+	// Session data (not saved)
+	private boolean transferringFile = false;
+	private boolean isLoggedIn;
+	private OutputStream fileStream;
+	public long fileSize = 0;
+	public long fileBytesTransferred = 0;
 	
 	private User(int uID, String username, String password) {
 	    this.uID = uID;
@@ -81,4 +90,35 @@ public class User {
 	    return -1;
 	}
 	
+	public boolean isTransferringFile() {
+	    return this.transferringFile;
+	}
+	
+	public boolean setFileStream(String filePath) {
+	    File temp = new File(filePath);
+	    try {
+	        fileStream = new FileOutputStream(temp);
+	        return true;
+	    } catch (Exception e) {
+	        System.out.println(e);
+	        return false;
+	    }
+	}
+	
+	public void closeFileStream() {
+	    try {
+	        fileStream.close();
+	    } catch (Exception e) {
+	        System.out.println(e);
+	        fileStream = null;
+	    }
+	}
+	
+	public OutputStream getFileStream() {
+	    return this.fileStream;
+	}
+	
+	public void setTransferringFile(boolean temp) {
+	    this.transferringFile = temp;
+	}
 }
