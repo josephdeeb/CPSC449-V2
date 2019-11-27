@@ -218,7 +218,10 @@ public class ConnectionHandler {
         	case 2:
         		Server.handleLogin(message, sock);
         		break;
-        	// create chat
+            // delete message
+            case 16:
+                Server.handleDeleteMessage(message, sock);
+                // create chat
             case 17:
                 Server.handleCreateChat(message, sock);
                 break;
@@ -318,4 +321,5 @@ public class ConnectionHandler {
         }
         
     }
+
 }

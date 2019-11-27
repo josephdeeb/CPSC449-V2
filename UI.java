@@ -42,7 +42,7 @@ public class UI {
                 
             case 3:
                 return new UIPacket("exit");
-            
+
             default:
                 System.out.println("ERROR: How the hell did you get here");
                 return new UIPacket("startup");
@@ -60,7 +60,6 @@ public class UI {
     	if (state == 0) {
 	        printTitle("Login");
 	        System.out.println("Please enter your username:");
-	        username = input.nextLine();
 	        username = input.nextLine();
 	        System.out.println("Please enter your password:");
 	        password = input.nextLine();
@@ -93,7 +92,6 @@ public class UI {
             String password = "";
             printTitle("Register a New Account");
             System.out.println("Please enter a username (Cannot contain commas, max 64 characters): ");
-            username = input.nextLine();
             username = input.nextLine();
             System.out.println("\nPlease enter a password (Cannot contain commas, max 64 characters): ");
             password = input.nextLine();
@@ -176,7 +174,35 @@ public class UI {
             return new UIPacket("mainmenu");
         }
     }
-    
+
+    public UIPacket deleteMessage(short state) {
+        if (state == -1) {
+            System.out.println("ERROR: Server tells us we sent a bad message.  Please press enter to continue");
+            input.nextLine();
+            return new UIPacket("startup");
+        }
+        else if(state == 0) {
+            printTitle("Delete message");
+            System.out.println("Please enter the chatID of the chat that has the message you would like to delete"); // TODO: store current chat of client instead?
+            String chatID = input.nextLine();
+            System.out.println("Please enter the contents of the message you would like to delete");
+            String messageContents = input.nextLine();
+            return new UIPacket("deleteMessage", new String[]{chatID, messageContents});
+        }
+        else if (state == 1) {
+            System.out.println("Delete message successful!\nPlease press enter to continue");
+            input.nextLine();
+            return new UIPacket(""); // TODO: reroute to chatview
+        }
+        else if (state == 2) {
+            System.out.println("Could not delete message.\nPlease press enter to continue");
+            input.nextLine();
+            return new UIPacket(""); // TODO: reroute to chatview
+        }
+        System.out.println("Unknown state used in delete message");
+        return new UIPacket("startup"); //unknown state
+    }
+
     public UIPacket downloadFile() {
         printTitle("Download File");
         System.out.println("Please enter the name of the file you would like to download");

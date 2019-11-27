@@ -83,7 +83,11 @@ public class Client {
             case "downloadfile":
                 nextUI = parseDownloadFile();
                 break;
-                
+
+            case "deletemessage":
+                nextUI =  parseDeleteMessage();
+                break;
+
             default:
                 nextUI = "exit";
                 System.out.println("ERROR: UI Type \"" + selection + "\" unknown...");
@@ -148,6 +152,28 @@ public class Client {
             username = temp.args[0];
         }
         return ui.register(type).nextUI;
+    }
+
+    private static String parseDeleteMessage() {
+        UIPacket temp = ui.deleteMessage((short)0);
+        String msg = temp.args[0] + "," + temp.args[1];
+        // args[0] = chatID, args[1] = messageContents
+        buf.clear();
+        buf.putShort((short)1);
+        try {
+            buf.putInt(msg.length());
+            buf.put(msg.getBytes("UTF-8"));
+        } catch (Exception e) {
+            System.out.println("ERROR: Could not get bytes from the msg in parseDeleteMessage");
+            return "startup";
+        }
+        buf.flip();
+        clientConnectionHandler.sendMessage(buf);
+
+        ByteBuffer response = clientConnectionHandler.receiveMessage();
+        short type = response.getShort();
+
+        return ui.deleteMessage(type).nextUI;
     }
     
     private static String parseChatsMenu() {

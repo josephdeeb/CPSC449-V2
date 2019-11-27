@@ -68,7 +68,7 @@ public class Server {
         chats.put(cID, newChat);
         return true;
     }
-    
+
     // un-loads a chat, useful if we start having memory issues
     public static boolean unloadChat(int cID) {
         if (chats.containsKey(cID)) {
@@ -99,7 +99,7 @@ public class Server {
         socketToUIDMap.put(sock, uID);
         return true;
     }
-    
+
     /*
      * This method handles user login.
      * Return values:
@@ -119,7 +119,11 @@ public class Server {
         else
             return 2;
     }
-    
+
+    public static boolean deleteMessage(Message message, int cID) {
+        return chats.get(cID).deleteMessage(message);
+    }
+
     public static boolean usernameExists(String username) {
     	return users.usernameExists(username);
     }
@@ -131,7 +135,31 @@ public class Server {
     public static void saveUsers() {
     	users.saveAllUsers();
     }
-    
+
+    public static boolean handleDeleteMessage(ByteBuffer message, SocketChannel sock) {
+        int len = message.getInt();
+        if (len > 129) {
+            connectionHandler.sendMessage(sock, (short) 2);
+        }
+
+        String userInfo = connectionHandler.retrieveString(message, len);
+
+        if (userInfo == null) {
+            connectionHandler.sendError(sock);
+            return false;
+        }
+
+        if (userInfo.split(",").length != 2) {
+            connectionHandler.sendMessage(sock, (short) 1);
+            return false;
+        }
+
+        int cID = Integer.parseInt(userInfo.split(",")[0]);
+        Message msg = new Message(userInfo.split(",")[1], socketToUIDMap.get(sock));
+        return chats.get(cID).deleteMessage(msg);
+    }
+
+
     public static void handleRegister(ByteBuffer message, SocketChannel sock) {
 	    // Take the length of the next string as an int
 		int len = message.getInt();
