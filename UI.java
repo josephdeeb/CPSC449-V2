@@ -177,6 +177,18 @@ public class UI {
         }
     }
     
+    public UIPacket downloadFile() {
+        printTitle("Download File");
+        System.out.println("Please enter the name of the file you would like to download");
+        String fileName = input.nextLine();
+        
+        System.out.println("Please enter the full path of the directory you would like to download the file to");
+        String downloadPathName = input.nextLine();
+        
+        return new UIPacket("downloadfile", new String[] {fileName, downloadPathName});
+        
+    }
+    
     public void printTitle(String title) {
         System.out.println("\n____________\n\n" + title + "\n____________\n");
     }

@@ -80,6 +80,10 @@ public class Client {
                 nextUI = parseUploadFile();
                 break;
                 
+            case "downloadfile":
+                nextUI = parseDownloadFile();
+                break;
+                
             default:
                 nextUI = "exit";
                 System.out.println("ERROR: UI Type \"" + selection + "\" unknown...");
@@ -252,6 +256,10 @@ public class Client {
             ui.input.nextLine();
             return "mainmenu";
         }
+    }
+    
+    private static String parseDownloadFile() {
+        UIPacket temp = ui.downloadFile();
     }
     
     private static String parseMainMenu() {
