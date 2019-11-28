@@ -245,6 +245,10 @@ public class ConnectionHandler {
         	case 302:
         	    Server.handleUploadFinish(message, sock);
         	    break;
+        	    
+        	case 310:
+        	    Server.handleSave(message, sock);
+        	    break;
         		
         default:
             // should never hit this

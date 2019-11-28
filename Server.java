@@ -315,6 +315,16 @@ public class Server {
         
         return;
     }
+    
+    public static void handleSave(ByteBuffer message, SocketChannel sock) {
+        // Message is irrelevant, just need to save all user and chat data
+        users.saveAllUsers();
+        for (ChatDB chat : chats.values()) {
+            chat.saveChat();
+        }
+        
+        return;
+    }
 
 	public static void handleCreateChat(ByteBuffer message, SocketChannel sock) {
         int len = message.getInt();

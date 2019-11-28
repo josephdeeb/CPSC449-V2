@@ -23,9 +23,10 @@ public class UI {
         System.out.println("1\t: Log in");
         System.out.println("2\t: Register");
         System.out.println("3\t: Exit program");
+        System.out.println("4\t: Save Server Data");
         try {
             selection = input.nextInt();
-            if (selection < 1 || selection > 3)
+            if (selection < 1 || selection > 4)
                 throw new IOException("ERROR: You did not type a number associated with an available option.");
         } catch (Exception e) {
             System.out.println(e);
@@ -42,6 +43,9 @@ public class UI {
                 
             case 3:
                 return new UIPacket("exit");
+                
+            case 4:
+                return new UIPacket("save");
 
             default:
                 System.out.println("ERROR: How the hell did you get here");

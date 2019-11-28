@@ -87,6 +87,10 @@ public class Client {
             case "deletemessage":
                 nextUI =  parseDeleteMessage();
                 break;
+                
+            case "save":
+                nextUI = parseSave();
+                break;
 
             default:
                 nextUI = "exit";
@@ -286,10 +290,25 @@ public class Client {
     
     private static String parseDownloadFile() {
         UIPacket temp = ui.downloadFile();
+        return "";
     }
     
     private static String parseMainMenu() {
         return ui.mainMenu().nextUI;
+    }
+    
+    private static String parseSave() {
+        // No UI needed
+        // Just put message type 310 and send
+        ByteBuffer message = ByteBuffer.allocate(2);
+        message.putShort((short)310);
+        message.flip();
+        
+        clientConnectionHandler.sendMessage(message);
+        
+        System.out.println("\n\nSave message sent successfully\n\n");
+        
+        return "startup";
     }
     
 }
