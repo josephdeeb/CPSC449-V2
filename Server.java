@@ -141,6 +141,54 @@ public class Server {
     public static void saveUsers() {
     	users.saveAllUsers();
     }
+	
+	
+	public static boolean handleSendFriendRequest(ByteBuffer message, SocketChannel sock){
+		Integer uID = socketToUIDMap.get(sock);
+		String friendlist = "";
+		
+		ArrayList<Integer> friends = users.getUser(uID).getFriends();
+		
+		//WORK ON LATER
+		ByteBuffer buf = ByteBuffer.allocate(ConnectionHandler.MAX_MESSAGE_SIZE);
+		byte[] bytes = new byte[friendlist.length()];
+		bytes = friendlist.getBytes();
+		buf.putInt(bytes.length);
+		buf.put(bytes);
+		buf.flip();
+		connectionHandler.sendMessage(sock, buf);
+		
+
+        
+		
+		return true;	
+	}
+	
+	
+	
+	public static boolean handleDisplayFriends(ByteBuffer message, SocketChannel sock){
+		Integer uID = socketToUIDMap.get(sock);
+		String friendlist = "";
+		
+		ArrayList<Integer> friends = users.getUser(uID).getFriends();
+		
+		for(int i = 0; i<friends.size(); i++){
+			friendlist = friendlist + " " + (users.getUser(friends.get(i)).getusername());
+		}
+		 System.out.println(friendlist);
+		ByteBuffer buf = ByteBuffer.allocate(ConnectionHandler.MAX_MESSAGE_SIZE);
+		byte[] bytes = new byte[friendlist.length()];
+		bytes = friendlist.getBytes();
+		buf.putInt(bytes.length);
+		buf.put(bytes);
+		buf.flip();
+		connectionHandler.sendMessage(sock, buf);
+		
+
+        
+		
+		return true;	
+	}
 
     public static boolean handleSendChatMesssage(ByteBuffer message, SocketChannel sock) {
         int len = message.getInt();
@@ -164,7 +212,7 @@ public class Server {
         Message msg = new Message(userInfo.split(",")[1], socketToUIDMap.get(sock));
         LinkedList<SocketChannel> socksToSendMessageTo = chats.get(cID).sendChatMessage(msg);
         for (SocketChannel socket : socksToSendMessageTo) {
-            connectionHandler.sendMessage(socket, message) //TODO send chat message to users currently in chat (What function to call on client side?)
+            connectionHandler.sendMessage(socket, message); //TODO send chat message to users currently in chat (What function to call on client side?)
         }
         connectionHandler.sendMessage(sock, (short)1);  //send confirmation to sender
         return true;
@@ -191,7 +239,7 @@ public class Server {
         Message msg = new Message(userInfo.split(",")[0], socketToUIDMap.get(sock));
         int cID = Integer.parseInt(userInfo.split(",")[1]);
 
-        connectionHandler.sendMessage(sock, (short)1)
+        connectionHandler.sendMessage(sock, (short)1);
 
         return chats.get(cID).deleteMessage(msg);
     }
@@ -218,7 +266,7 @@ public class Server {
         Message msg = new Message(userInfo.split(",")[0], socketToUIDMap.get(sock));
         int cID = Integer.parseInt(userInfo.split(",")[1]);
 
-        connectionHandler.sendMessage(sock, ((short)chats.get(cID).getChatHistory()).getBytes());
+        //connectionHandler.sendMessage(sock, ((short)chats.get(cID).getChatHistory()).getBytes());
 
         return true;
 
