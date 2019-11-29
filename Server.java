@@ -606,16 +606,20 @@ public class Server {
         ArrayList<Integer> chatUsers = cdb.getUsers();
         if (chatUsers.contains(UID)) {
             // Send error message, user already a member
-            return;
+            connectionHandler.sendMessage(sock, (short) -1);
         }
         if (chatUsers.contains(SUID)) {
             cdb.addUser(UID);
             User addUser = users.getUser(UID);
             addUser.addChat(CID);
+            cdb.saveChat();
+            saveUsers();
             // Send success message
+            connectionHandler.sendMessage(sock, (short)1);
         }
         else {
             // Send you are not a member message
+            connectionHandler.sendMessage(sock, (short)2);
         }
 
 	}

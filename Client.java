@@ -1,4 +1,5 @@
 import java.io.*;
+import java.net.IDN;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -14,6 +15,7 @@ public class Client {
     private static ByteBuffer buf;
     public static String username = "";
     public static int currentChatID;
+    public static String currentChatName;
 
     public static void main(String[] args) {
         if (args.length != 2) {
@@ -78,6 +80,10 @@ public class Client {
 
             case "chatselected":
                 nextUI = parseChatSelected();
+                break;
+
+            case "adduser":
+                nextUI = parseAddUser();
                 break;
 
             case "friendslist":
@@ -145,8 +151,6 @@ public class Client {
 
         return nextUI;
     }
-
-
 
 
     public static String parseChangeUserName(){
@@ -364,6 +368,7 @@ public class Client {
 
     private static String parseChatsList() {
         ArrayList<Integer> userChats = new ArrayList<Integer>();
+        ArrayList<String> userChatNames = new ArrayList<String>();
         buf.clear();
         buf.putShort((short)20);
         buf.flip();
@@ -384,16 +389,20 @@ public class Client {
                 byte[] name = new byte[size];
                 response.get(name, 0, size);
                 userChats.add(CID);
+                userChatNames.add(new String(name));
                 System.out.println(CID + "\t: " + new String(name));
             }
         }
 
         UIPacket temp = ui.chatsLists();
         int selection = Integer.parseInt(temp.args[0]);
-        if (selection == -1) {
+        if (selection < 0) {
             return "chatsmenu";
         }
         if (userChats.contains(selection)) {
+            Client.currentChatID = selection;
+            Client.currentChatName = userChatNames.get(userChats.indexOf(selection));
+            System.out.println(selection + "Selected");
             return "chatselected";
         }
         else {
@@ -403,8 +412,33 @@ public class Client {
     }
 
     private static String parseChatSelected() {
+        UIPacket temp = ui.chatSelected();
 
-        return "chatsmenu";
+        return ui.chatSelected().nextUI;
+    }
+
+    private static String parseAddUser() {
+        UIPacket temp = ui.addUser();
+        int id = Integer.parseInt(temp.args[0]);
+        buf.clear();
+        buf.putShort((short)18);
+        buf.putInt(currentChatID);
+        buf.putInt(id);
+        buf.flip();
+        clientConnectionHandler.sendMessage(buf);
+
+        ByteBuffer response = clientConnectionHandler.receiveMessage();
+        short type = response.getShort();
+        if (type == -1) {
+            System.out.println("Something went wrong!");
+        }
+        if (type == 1) {
+            System.out.println("User added successfully!");
+        }
+        if (type == 2) {
+            System.out.println("You can't do that action");
+        }
+        return "chatselected";
     }
 
     private static String parseDeleteMessage() {
