@@ -8,7 +8,7 @@ public class UI {
     
     public UI() {
         this.input = new Scanner(System.in);
-        input.nextLine();
+        //input.nextLine();
     }
     
     
@@ -25,7 +25,7 @@ public class UI {
         System.out.println("3\t: Exit program");
         System.out.println("4\t: Save Server Data");
         try {
-            selection = input.nextInt();
+            selection = Integer.parseInt(input.nextLine());
             if (selection < 1 || selection > 4)
                 throw new IOException("ERROR: You did not type a number associated with an available option.");
         } catch (Exception e) {
@@ -134,7 +134,7 @@ public class UI {
         System.out.println("3\t: Account Settings");
         System.out.println("4\t: Logout");
         try {
-            selection = input.nextInt();
+            selection = Integer.parseInt(input.nextLine());
             if (selection < 1 || selection > 4)
                 throw new IOException("ERROR: You did not type a number associated with an available option.");
         } catch (Exception e) {
@@ -221,5 +221,53 @@ public class UI {
     
     public void printTitle(String title) {
         System.out.println("\n____________\n\n" + title + "\n____________\n");
+    }
+
+    public UIPacket chatsMenu() {
+        int selection = -1;
+        printTitle("Chats Menu");
+        System.out.println("Please choose one of the following options: ");
+        System.out.println("0\t: Main Menu");
+        System.out.println("1\t: Your Chats");
+        System.out.println("2\t: Create New Chat");
+
+        try {
+            selection = Integer.parseInt(input.nextLine());
+            if (selection < 0 || selection > 2)
+                throw new IOException("ERROR: You did not type a number associated with an available option.");
+        } catch (Exception e) {
+            System.out.println(e);
+            System.out.println("Please press enter to try again");
+            input.nextLine();
+            return new UIPacket("mainmenu");
+        }
+
+        switch (selection) {
+            case 0 :
+                return new UIPacket("mainmenu");
+            case 1:
+                return new UIPacket("showchats");
+            case 2:
+                return new UIPacket("createchat");
+            default:
+                System.out.println("This should've been impossible to reach...");
+                return new UIPacket("mainmenu");
+        }
+    }
+
+    public UIPacket showChats() {
+        int selection = -1;
+        printTitle("Your Chats");
+
+        return new UIPacket("chatsmenu");
+    }
+
+    public UIPacket createChat() {
+        String chatName;
+        System.out.println("Please enter the name of the chat to be created: ");
+        chatName = input.nextLine();
+
+
+        return new UIPacket("createChat", new String[] {chatName});
     }
 }

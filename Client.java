@@ -1,7 +1,4 @@
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -67,6 +64,10 @@ public class Client {
             case "chatsmenu":
                 nextUI = parseChatsMenu();
                 break;
+
+            case "createchat":
+                nextUI = parseCreateChat();
+                break;
                 
             case "friendslist":
                 nextUI = parseFriendsList();
@@ -99,7 +100,9 @@ public class Client {
         
         return nextUI;
     }
-    
+
+
+
     private static String parseStartup() {
         return ui.startup().nextUI;
     }
@@ -181,15 +184,39 @@ public class Client {
     }
     
     private static String parseChatsMenu() {
-        
+        //UIPacket temp = ui.chatsMenu();
+        return ui.chatsMenu().nextUI;
+    }
+
+    private static String parseCreateChat() {
+        UIPacket temp = ui.createChat();
+        String chatName = temp.args[0];
+        buf.clear();
+        buf.putShort((short)17);
+        try {
+            buf.putInt(chatName.length());
+            buf.put(chatName.getBytes("UTF-8"));
+        } catch (Exception e) {
+            System.out.println("Something went wrong creating chat.");
+        }
+        buf.flip();
+        clientConnectionHandler.sendMessage(buf);
+
+        ByteBuffer response = clientConnectionHandler.receiveMessage();
+        short type = response.getShort();
+
+        if (type == (short) 0) {
+            System.out.println("Chat " + chatName + " has been created successfully!");
+        }
+        return ui.createChat().nextUI;
     }
     
     private static String parseFriendsList() {
-        
+        return null;
     }
     
     private static String parseAccountSettings() {
-        
+        return null;
     }
     
     private static String parseUploadFile() {
