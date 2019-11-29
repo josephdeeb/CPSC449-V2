@@ -88,6 +88,16 @@ public class User {
 	        return true;
 	    }
 	}
+
+	public boolean removeChat(int cID) {
+		if (chats.contains(cID)) {
+			chats.remove(cID);
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
 	
 	public void addFriendRequest(int friendReq) {
 	    if (!friendRequests.contains(friendReq)) {

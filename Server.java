@@ -688,7 +688,7 @@ public class Server {
         connectionHandler.sendMessage(sock,  (short)0);
 
     }
-    //TODO add return messages
+
 	public static void handleAddChatUser(ByteBuffer message, SocketChannel sock) {
         int CID = message.getInt();
         int UID = message.getInt();
@@ -697,19 +697,41 @@ public class Server {
         ArrayList<Integer> chatUsers = cdb.getUsers();
         if (chatUsers.contains(UID)) {
             // Send error message, user already a member
-            return;
+            connectionHandler.sendMessage(sock, (short) -1);
         }
         if (chatUsers.contains(SUID)) {
             cdb.addUser(UID);
             User addUser = users.getUser(UID);
             addUser.addChat(CID);
+            cdb.saveChat();
+            saveUsers();
             // Send success message
+            connectionHandler.sendMessage(sock, (short)1);
         }
         else {
             // Send you are not a member message
+            connectionHandler.sendMessage(sock, (short)2);
         }
-
 	}
+
+    public static void handleRemoveChatUser(ByteBuffer message, SocketChannel sock) {
+        int CID = message.getInt();
+        int UID = message.getInt();
+        int SUID = socketToUIDMap.get(sock);
+        ChatDB cdb = chats.get(CID);
+        ArrayList<Integer> chatUsers = cdb.getUsers();
+        if (chatUsers.contains(UID)) {
+            if (chatUsers.get(0) == SUID) {
+                cdb.removeUser(UID);
+                cdb.saveChat();
+                User removeUser = users.getUser(UID);
+                removeUser.removeChat(CID);
+                saveUsers();
+                connectionHandler.sendMessage(sock, (short)1);
+            }
+        }
+        connectionHandler.sendMessage(sock, (short)-1);
+    }
 
 	public static void handleGetChatList(ByteBuffer message, SocketChannel sock) {
         User sockUser = users.getUser(socketToUIDMap.get(sock));

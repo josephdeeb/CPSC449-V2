@@ -210,6 +210,16 @@ public class ChatDB extends DB {
         }
     }
 
+    public boolean removeUser(int uID) {
+        if (users.contains(uID)) {
+            users.remove((Integer)uID);
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
     public void addMessage(Message msg) {
         messages.add(msg);
     }

@@ -1,6 +1,7 @@
 
 import java.io.File;
 import java.io.IOException;
+import java.net.IDN;
 import java.util.Scanner;
 
 public class UI {
@@ -447,8 +448,38 @@ public class UI {
     }
 
     public UIPacket chatSelected() {
+        int selection = -1;
+        printTitle("CID: " + Client.currentChatID + "\t" + Client.currentChatName);
+        System.out.println("Please choose one of the following options: ");
+        System.out.println("-1\t: Chats Menu");
+        System.out.println("0\t: Add User");
+        System.out.println("1\t: Remove User");
+        System.out.println("2\t: Placeholder");
 
-        return null;
+        try {
+            selection = Integer.parseInt(input.nextLine());
+            if (selection < -1 || selection > 2)
+                throw new IOException("ERROR: You did not type a number associated with an available option.");
+        } catch (Exception e) {
+            System.out.println(e);
+            System.out.println("Please press enter to try again");
+            input.nextLine();
+            return new UIPacket("mainmenu");
+        }
+
+        switch (selection) {
+            case -1 :
+                return new UIPacket("chatsmenu");
+            case 0:
+                return new UIPacket("adduser");
+            case 1:
+                return new UIPacket("removeuser");
+            case 2:
+                return new UIPacket("");
+            default:
+                System.out.println("This should've been impossible to reach...");
+                return new UIPacket("chatsmenu");
+        }
     }
 
     public UIPacket createChat() {
@@ -462,5 +493,17 @@ public class UI {
 
     public UIPacket getChatHistory() {
         return null;
+    }
+
+    public UIPacket addUser() {
+        System.out.println("Enter the ID of the user to be added");
+        int ID = Integer.parseInt(input.nextLine());
+        return new UIPacket("adduser", new String[] {String.valueOf(ID)});
+    }
+
+    public UIPacket removeUser() {
+        System.out.println("Enter the ID of the user to be removed");
+        int ID = Integer.parseInt(input.nextLine());
+        return new UIPacket("removeuser", new String[] {String.valueOf(ID)});
     }
 }
