@@ -74,10 +74,38 @@ public class Client {
             case "friendslist":
                 nextUI = parseFriendsList();
                 break;
+			
+			case "displayfriends":
+				nextUI = parseDisplayFriends();
+				break;
+				
+			case "sendfriendrequest":
+				nextUI = parseSendFriendRequest();
+				break;
+				
+			case "viewfriendrequests":
+				nextUI = parseViewFriendRequests();
+				break;
+				
+			case "acceptfriendrequest":
+				nextUI = parseAcceptFriendRequest();
+				break;
                 
             case "accountsettings":
                 nextUI = parseAccountSettings();
                 break;
+				
+			case "changeusername":
+				nextUI = parseChangeUsername();
+				break;
+				
+			case "changepassword":
+				nextUI = parseChangePassword();
+				break;
+				
+			case "deleteaccout":
+				nextUI = parseDeleteAccout();
+				break;
                 
             case "uploadfile":
                 nextUI = parseUploadFile();
@@ -108,6 +136,72 @@ public class Client {
         
         return nextUI;
     }
+	
+	private static String parseSendFriendRequest() {
+		UIPacket temp = ui.sendFriendRequest();
+		String msg = temp.args[0];
+        buf.clear();
+        buf.putShort((short)4);
+        try {
+        	buf.putInt(msg.length());
+        	buf.put(msg.getBytes("UTF-8"));
+        } catch (Exception e) {
+        	System.out.println("Couldn't get bytes from the msg in parseSendFriendRequest()");
+        	return "friendslist";
+        }
+		
+		
+		
+		buf.flip();
+        
+        clientConnectionHandler.sendMessage(buf);
+		buf.clear();
+		
+		ByteBuffer response = clientConnectionHandler.receiveMessage();
+        short type = response.getShort();
+		
+		if(type == 1){
+			System.out.println("Request has been sent!");
+		}
+		
+		else{
+			System.out.println("Request failed :( Make sure this is a registered user! ");
+		}
+		
+		
+		return "friendslist";
+        
+    }
+	
+	
+	
+	private static String parseDisplayFriends() {
+		
+		
+        buf.clear();
+        buf.putShort((short)3);
+		
+		buf.flip();
+        
+        clientConnectionHandler.sendMessage(buf);
+		buf.clear();
+		
+		ByteBuffer response = clientConnectionHandler.receiveMessage();
+        int stringSize = response.getInt();
+		
+		byte[] stringBytes = new byte[stringSize];
+		
+		response.get(stringBytes);
+		
+		String friends = new String(stringBytes);
+
+        //ui.displayFriends(friends);
+		System.out.println(friends);
+		return"friendslist";
+        
+    }
+	
+	
 
     private static String parseStartup() {
         return ui.startup().nextUI;
@@ -209,7 +303,8 @@ public class Client {
         ByteBuffer response = clientConnectionHandler.receiveMessage();
         short type = response.getShort();
 
-        return ui.printChatHistory(response.toString());
+        //return ui.printChatHistory(response.toString());
+		return"";
     }
     
     private static String parseChatsMenu() {
@@ -535,6 +630,10 @@ public class Client {
     private static String parseMainMenu() {
         return ui.mainMenu().nextUI;
     }
+	
+	private static String parseFriendslist(){
+		return ui.friendsList().nextUI;
+	}
     
     private static String parseSave() {
         // No UI needed

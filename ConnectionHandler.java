@@ -218,6 +218,12 @@ public class ConnectionHandler {
         	case 2:
         		Server.handleLogin(message, sock);
         		break;
+			case 3:
+				Server.handleDisplayFriends(message, sock);
+				break;
+			case 4:
+				Server.handleSendFriendRequest(message, sock);
+			
             // send message to chat
             case 14:
                 Server.handleSendChatMesssage(message, sock);

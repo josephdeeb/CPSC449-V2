@@ -125,6 +125,92 @@ public class UI {
         }
     }
     
+	public UIPacket friendsList(){
+		int selection = -1;
+        printTitle("Friends menu\nLogged in as " + Client.username);
+        System.out.println("Please choose one of the following options: ");
+        System.out.println("1\t: Display Friends");
+        System.out.println("2\t: Send a friend request");
+        System.out.println("3\t: View friend requests");
+		System.out.println("4\t: Accept friend request");
+		System.out.println("5\t: Back to main menu");
+		
+		try {
+            selection = Integer.parseInt(input.nextLine());
+            if (selection < 1 || selection > 5)
+                throw new IOException("ERROR: You did not type a number associated with an available option.");
+        } catch (Exception e) {
+            System.out.println(e);
+            System.out.println("Please press enter to try again");
+            input.nextLine();
+            return new UIPacket("mainmenu");
+        }
+        
+        switch (selection) {
+            case 1:
+                return new UIPacket("displayfriends");
+            case 2:
+                return new UIPacket("sendfriendrequest");
+            case 3: 
+                return new UIPacket("viewfriendrequests");
+            case 4:
+                return new UIPacket("acceptfriendrequest");
+            case 5:
+                return new UIPacket("mainmenu");
+            
+            default:
+                System.out.println("This should've been impossible to reach...");
+                return new UIPacket("mainmenu");
+        }
+    }
+	
+	
+	public UIPacket accountSettings(){
+		int selection = -1;
+        printTitle("Accout settings\nLogged in as " + Client.username);
+        System.out.println("Please choose one of the following options: ");
+        System.out.println("1\t: Change username");
+        System.out.println("2\t: Change password");
+        System.out.println("3\t: Delete your account(No second chances! Once you choose this option - your account is gone forever)");
+		System.out.println("4\t: Back to Main menu");
+		
+		try {
+            selection = Integer.parseInt(input.nextLine());
+            if (selection < 1 || selection > 4)
+                throw new IOException("ERROR: You did not type a number associated with an available option.");
+        } catch (Exception e) {
+            System.out.println(e);
+            System.out.println("Please press enter to try again");
+            input.nextLine();
+            return new UIPacket("mainmenu");
+        }
+        
+        switch (selection) {
+            case 1:
+                return new UIPacket("changeusername");
+            case 2:
+                return new UIPacket("changepassword");
+            case 3: 
+                return new UIPacket("deleteaccout");
+            case 4:
+                return new UIPacket("mainmenu");
+            
+            default:
+                System.out.println("This should've been impossible to reach...");
+                return new UIPacket("mainmenu");
+        }
+    }
+	
+	public UIPacket sendFriendRequest(){
+		String friend = "";
+		System.out.println("Enter the name of the user you would like to send a friend request to:");
+		friend = input.nextLine();
+		return new UIPacket("sendfriendrequest", new String[] {friend} );
+	}
+		
+	
+	
+	
     public UIPacket mainMenu() {
         int selection = -1;
         printTitle("Main Menu\nLogged in as " + Client.username);
