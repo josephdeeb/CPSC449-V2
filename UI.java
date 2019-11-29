@@ -192,11 +192,9 @@ public class UI {
         }
         else if(state == 0) {
             printTitle("Delete message");
-            System.out.println("Please enter the chatID of the chat that has the message you would like to delete"); // TODO: store current chat of client instead?
-            String chatID = input.nextLine();
             System.out.println("Please enter the contents of the message you would like to delete");
             String messageContents = input.nextLine();
-            return new UIPacket("deleteMessage", new String[]{chatID, messageContents});
+            return new UIPacket("deleteMessage", new String[]{messageContents});
         }
         else if (state == 1) {
             System.out.println("Delete message successful!\nPlease press enter to continue");
@@ -209,6 +207,32 @@ public class UI {
             return new UIPacket(""); // TODO: reroute to chatview
         }
         System.out.println("Unknown state used in delete message");
+        return new UIPacket("startup"); //unknown state
+    }
+
+    public UIPacket sendChatMessage(int state) {
+        if (state == -1) {
+            System.out.println("ERROR: Server tells us we sent a bad message.  Please press enter to continue");
+            input.nextLine();
+            return new UIPacket("startup");
+        }
+        else if(state == 0) {
+            printTitle("Send chat message");
+            System.out.println("Please enter the contents of the message you would like to delete");
+            String messageContents = input.nextLine();
+            return new UIPacket("deleteMessage", new String[]{messageContents});
+        }
+        else if (state == 1) {
+            System.out.println("Send message successful!\nPlease press enter to continue");
+            input.nextLine();
+            return new UIPacket(""); // TODO: reroute to chatview
+        }
+        else if (state == 2) {
+            System.out.println("Could not send message.\nPlease press enter to continue");
+            input.nextLine();
+            return new UIPacket(""); // TODO: reroute to chatview
+        }
+        System.out.println("Unknown state used in send message");
         return new UIPacket("startup"); //unknown state
     }
 
@@ -273,5 +297,9 @@ public class UI {
 
 
         return new UIPacket("createChat", new String[] {chatName});
+    }
+
+    public UIPacket getChatHistory() {
+        
     }
 }

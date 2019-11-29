@@ -218,10 +218,18 @@ public class ConnectionHandler {
         	case 2:
         		Server.handleLogin(message, sock);
         		break;
+            // send message to chat
+            case 14:
+                Server.handleSendChatMesssage(message, sock);
+                break;
+            // get chat history
+            case 15:
+                Server.handleGetChatHistory(message, sock);
+                break;
             // delete message
             case 16:
                 Server.handleDeleteMessage(message, sock);
-                // create chat
+            // create chat
             case 17:
                 Server.handleCreateChat(message, sock);
                 break;
@@ -272,9 +280,7 @@ public class ConnectionHandler {
     
     public String retrieveString(ByteBuffer msg, int len) {
     	byte[] temp = new byte[len];
-    	
-    	
-    	
+
     	try {
     		msg.get(temp);
     		return new String(temp, "UTF-8");
