@@ -120,6 +120,7 @@ public class Client {
                 break;
             case "getchathistory":
                 nextUI = parseGetChatHistory();
+                
             case "deletemessage":
                 nextUI =  parseDeleteMessage();
                 break;
@@ -259,8 +260,8 @@ public class Client {
         }
         return ui.register(type).nextUI;
     }
-
-    private static String parseSendChatMessage() {
+    
+	private static String parseSendChatMessage() {
         UIPacket temp = ui.sendChatMessage((short)0);
         String msg = temp.args[0] + "," + temp.args[1];
         // args[0] = chatID, args[1] = messageContents
@@ -282,7 +283,7 @@ public class Client {
 
         return ui.sendChatMessage(type).nextUI;
     }
-
+    
     private static String parseGetChatHistory() {
         UIPacket temp = ui.getChatHistory();
         String msg = temp.args[0] + "," + Client.currentChatID;
@@ -305,18 +306,18 @@ public class Client {
         //return ui.printChatHistory(response.toString());
 		return"";
     }
-
+    
     private static String parseChatsMenu() {
         //UIPacket temp = ui.chatsMenu();
         return ui.chatsMenu().nextUI;
     }
-
-    private static String parseDeleteMessage() {
+    
+   	private static String parseDeleteMessage() {
         UIPacket temp = ui.deleteMessage((short)0);
-        String msg = temp.args[0] + "," + Client.currentChatID;
-        // args[0] = messageContents
+        String msg = temp.args[0] + "," + temp.args[1];
+        // args[0] = chatID, args[1] = messageContents
         buf.clear();
-        buf.putShort((short)16);
+        buf.putShort((short)1);
         try {
             buf.putInt(msg.length());
             buf.put(msg.getBytes("UTF-8"));
@@ -641,7 +642,8 @@ public class Client {
         message.putShort((short)310);
         message.flip();
         
-
+        clientConnectionHandler.sendMessage(message);
+        
         System.out.println("\n\nSave message sent successfully\n\n");
         
         return "startup";

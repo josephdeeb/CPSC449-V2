@@ -65,7 +65,6 @@ public class UI {
 	        printTitle("Login");
 	        System.out.println("Please enter your username:");
 	        username = input.nextLine();
-	        username = input.nextLine();
 	        System.out.println("Please enter your password:");
 	        password = input.nextLine();
 	        return new UIPacket("login", new String[] {username, password});
@@ -256,7 +255,6 @@ public class UI {
         printTitle("Upload File");
         System.out.println("Please enter the path of the file you wish to upload: ");
         String filePath = input.nextLine();
-        filePath = input.nextLine();
         File temp;
         try {
             temp = new File(filePath);
@@ -328,7 +326,6 @@ public class UI {
         printTitle("Download File");
         System.out.println("Please enter the name of the file you would like to download");
         String fileName = input.nextLine();
-        fileName = input.nextLine();
         
         System.out.println("Please enter the full path of the directory you would like to download the file to (excluding the file you're about to download)");
         String downloadPathName = input.nextLine();
