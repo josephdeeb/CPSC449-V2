@@ -23,19 +23,8 @@ public class ChatDB extends DB {
         this.messages = new ArrayList<>();
     }
 
-    public static ChatDB create(String path, int cID, String name) {
-        // Check if the chats folder already exists.  If it doesn't, try to make it.
-        try {
-            File folder = new File(path + File.separator + folderName);
-            if (!folder.exists()) {
-                if (!folder.mkdir())
-                    throw new IOException("ERROR: Could not create folder for ChatDB");
-            }
-        } catch (Exception e) {
-            System.out.println(e);
-            return null;
-        }
-        ChatDB temp = new ChatDB(path + File.separator + folderName, cID, name);
+    public static ChatDB create(int cID, String name) {
+        ChatDB temp = new ChatDB(folderName, cID, name);
         if (temp.checkCreate()) {
             return temp;
         }
@@ -103,9 +92,9 @@ public class ChatDB extends DB {
     /*
      * path is the root path of the program, not the path to the chat
      */
-    public static ChatDB loadChat(String path, int cID) {
+    public static ChatDB loadChat(int cID) {
         BufferedReader reader = null;
-        File db = new File(path + File.separator + folderName + File.separator + cID + ".csv");
+        File db = new File(folderName + File.separator + cID + ".csv");
         ArrayList<Integer> tempUsers = new ArrayList<Integer>();
         ArrayList<Message> tempMessages = new ArrayList<Message>();
         String name = "";
@@ -155,7 +144,7 @@ public class ChatDB extends DB {
 
             // All users and messages should be in tempUsers and tempMessages respectively
             // Time to create our ChatDB object!
-            ChatDB tempChatDB = ChatDB.create(path, cID, name);
+            ChatDB tempChatDB = ChatDB.create(cID, name);
             //ChatDB tempChatDB = new ChatDB(dbPath, cID, name);
             tempChatDB.setMessages(tempMessages);
             tempChatDB.setUsers(tempUsers);

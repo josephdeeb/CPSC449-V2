@@ -2,6 +2,7 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Client {
@@ -13,12 +14,12 @@ public class Client {
     private static ByteBuffer buf;
     public static String username = "";
     public static int currentChatID;
-    
+
     public static void main(String[] args) {
         if (args.length != 2) {
             System.out.println("ERROR: Incorrect number of arguments.  Proper usage: java Client [server ip] [server port]");
         }
-        
+
         try {
             clientConnectionHandler = ClientConnectionHandler.create(args[0], Integer.parseInt(args[1]));
             if (clientConnectionHandler == null)
@@ -27,9 +28,9 @@ public class Client {
             System.out.println(e);
             return;
         }
-        
+
         buf = ByteBuffer.allocate(MAX_MESSAGE_SIZE);
-        
+
         ui = new UI();
         running = true;
         String next = "startup";
@@ -37,10 +38,10 @@ public class Client {
             next = parseUI(next);
         }
     }
-    
+
     private static String parseUI(String selection) {
-        String nextUI;
-        
+        String nextUI = "";
+
         switch (selection) {
             case "startup":
                 nextUI = parseStartup();
@@ -70,7 +71,11 @@ public class Client {
             case "createchat":
                 nextUI = parseCreateChat();
                 break;
-                
+
+            case "chatslist":
+                nextUI = parseChatsList();
+                break;
+
             case "friendslist":
                 nextUI = parseFriendsList();
                 break;
@@ -82,35 +87,35 @@ public class Client {
 			case "sendfriendrequest":
 				nextUI = parseSendFriendRequest();
 				break;
-				
+
 			case "viewfriendrequests":
-				nextUI = parseViewFriendRequests();
+				//nextUI = parseViewFriendRequests();
 				break;
-				
+
 			case "acceptfriendrequest":
-				nextUI = parseAcceptFriendRequest();
+				//nextUI = parseAcceptFriendRequest();
 				break;
-                
+
             case "accountsettings":
                 nextUI = parseAccountSettings();
                 break;
-				
+
 			case "changeusername":
-				nextUI = parseChangeUsername();
+				//nextUI = parseChangeUsername();
 				break;
-				
+
 			case "changepassword":
-				nextUI = parseChangePassword();
+				//nextUI = parseChangePassword();
 				break;
-				
+
 			case "deleteaccout":
-				nextUI = parseDeleteAccout();
+				//nextUI = parseDeleteAccout();
 				break;
-                
+
             case "uploadfile":
                 nextUI = parseUploadFile();
                 break;
-                
+
             case "downloadfile":
                 nextUI = parseDownloadFile();
                 break;
@@ -120,11 +125,11 @@ public class Client {
                 break;
             case "getchathistory":
                 nextUI = parseGetChatHistory();
-                
+
             case "deletemessage":
                 nextUI =  parseDeleteMessage();
                 break;
-                
+
             case "save":
                 nextUI = parseSave();
                 break;
@@ -133,10 +138,11 @@ public class Client {
                 nextUI = "exit";
                 System.out.println("ERROR: UI Type \"" + selection + "\" unknown...");
         }
-        
+
         return nextUI;
     }
-	
+
+
 	public static String parseChangeUserName(){
 		UIPacket temp = ui.changeUsername((short) 0);
 		String msg = temp.args[0];
@@ -149,13 +155,13 @@ public class Client {
 			 System.out.println("Errpr: could not get bytes from the msg in parseChangeUserName");
 			 return "accountsettings";
 		 }
-		 
+
 		 buf.flip();
-        
+
         clientConnectionHandler.sendMessage(buf);
-        
+
         ByteBuffer response = clientConnectionHandler.receiveMessage();
-        
+
         short type = response.getShort();
 		if(type == 6){
 			System.out.println("Error");
@@ -170,10 +176,10 @@ public class Client {
         }
         return ui.changeUsername(type).nextUI;
     }
-		 
-		
-	
-	
+
+
+
+
 	private static String parseSendFriendRequest() {
 		UIPacket temp = ui.sendFriendRequest();
 		String msg = temp.args[0];
@@ -186,35 +192,35 @@ public class Client {
         	System.out.println("Couldn't get bytes from the msg in parseSendFriendRequest()");
         	return "friendslist";
         }
-		
-		
-		
+
+
+
 		buf.flip();
-        
+
         clientConnectionHandler.sendMessage(buf);
 		buf.clear();
-		
+
 		ByteBuffer response = clientConnectionHandler.receiveMessage();
         short type = response.getShort();
-		
+
 		if(type == 1){
 			System.out.println("Request has been sent!");
 		}
-		
+
 		else{
 			System.out.println("Request failed :( Make sure this is a registered user! ");
 		}
-		
-		
+
+
 		return "friendslist";
-        
+
     }
-	
-	
-	
+
+
+
 	private static String parseDisplayFriends() {
-		
-		
+
+
         buf.clear();
         buf.putShort((short)3);
 		
@@ -348,8 +354,48 @@ public class Client {
         //UIPacket temp = ui.chatsMenu();
         return ui.chatsMenu().nextUI;
     }
-    
-   	private static String parseDeleteMessage() {
+
+
+    private static String parseChatsList() {
+        ArrayList<Integer> userChats = new ArrayList<Integer>();
+        buf.clear();
+        buf.putShort((short)20);
+        buf.flip();
+        clientConnectionHandler.sendMessage(buf);
+
+        ByteBuffer response = clientConnectionHandler.receiveMessage();
+        int chatsize = response.getInt();
+
+        if (chatsize == 0) {
+            System.out.println("You have no chats");
+            return "chatsmenu";
+        }
+        else {
+            for (int i = 0; i < chatsize; i++) {
+                int CID = response.getInt();
+                int size = response.getInt();
+                byte[] name = new byte[size];
+                response.get(name, 0, size);
+                userChats.add(CID);
+                System.out.println(CID + "\t: " + new String(name));
+            }
+        }
+
+        UIPacket temp = ui.chatsLists();
+        int selection = Integer.parseInt(temp.args[0]);
+        if (selection == -1) {
+            return "chatsmenu";
+        }
+        if (userChats.contains(selection)) {
+            return "chatselected";
+        }
+        else {
+            System.out.println("Invalid selection");
+            return "chatsmenu";
+        }
+    }
+
+    private static String parseDeleteMessage() {
         UIPacket temp = ui.deleteMessage((short)0);
         String msg = temp.args[0] + "," + temp.args[1];
         // args[0] = chatID, args[1] = messageContents

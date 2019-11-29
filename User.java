@@ -84,7 +84,7 @@ public class User {
 	        return false;
 	    }
 	    else {
-	        chats.add(uID);
+	        chats.add(cID);
 	        return true;
 	    }
 	}

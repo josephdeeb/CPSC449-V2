@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
@@ -67,7 +68,7 @@ public class Server {
     // Tries to load the chat with the given cID and adds it to chats
     // Returns true if the load was successful, false if the load was unsuccessful
     public static boolean loadChat(int cID) {
-        ChatDB newChat = ChatDB.loadChat(new File("").getAbsolutePath(), cID);
+        ChatDB newChat = ChatDB.loadChat(cID);
         if (newChat == null)
             return false;
         
@@ -565,22 +566,24 @@ public class Server {
 	public static void handleCreateChat(ByteBuffer message, SocketChannel sock) {
         int len = message.getInt();
         String chatName = connectionHandler.retrieveString(message, len);
-        String chatPath = "" + File.separator + ChatDB.folderName;
+        int CID = -1;
 
         try {
-            File folder = new File(chatPath);
+            File folder = new File(ChatDB.folderName);
             if (!folder.exists()) {
                 if (!folder.mkdir())
                     throw new IOException("ERROR: Could not create folder for ChatDB");
+            }
+            CID = folder.list().length;
+            if (CID > 0) {
+                CID = CID/2;
             }
         } catch (Exception e) {
             System.out.println(e);
         }
 
-        int CID = new File (chatPath).list().length;
 
-
-        ChatDB cdb = ChatDB.create("", CID, chatName);
+        ChatDB cdb = ChatDB.create(CID, chatName);
 
         int UID = socketToUIDMap.get(sock);
         cdb.addUser(UID);
@@ -592,7 +595,6 @@ public class Server {
 
         connectionHandler.sendMessage(sock,  (short)0);
 
-        //TODO add return message
     }
     //TODO add return messages
 	public static void handleAddChatUser(ByteBuffer message, SocketChannel sock) {
@@ -618,6 +620,41 @@ public class Server {
 	}
 
 	public static void handleGetChatList(ByteBuffer message, SocketChannel sock) {
+        User sockUser = users.getUser(socketToUIDMap.get(sock));
+        ArrayList<Integer> chatList = new ArrayList<Integer>(sockUser.getChats());
+        int chatSize = chatList.size();
+        ByteBuffer out = ByteBuffer.allocate(ConnectionHandler.MAX_MESSAGE_SIZE);
+        out.putInt(chatSize);   // put number of chats into out buffer
+        int CID;
+        ChatDB cdb;
+        String chatName;
+
+        if (chatSize > 0) {
+            for (int i = 0; i < chatSize; i++) {
+                CID = chatList.get(i);
+
+                // Check if the chat is loaded and mapped to memory
+                if (loadChat(CID)) {
+
+                }
+                else {
+                    //TODO Error
+                }
+
+                chatName = chats.get(CID).getName();
+                try {
+                    out.putInt(CID);
+                    out.putInt(chatName.length());
+                    out.put(chatName.getBytes("UTF-8"));
+                } catch (Exception e) {
+                    System.out.println("Couldn't put chat name into buffer");
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        out.flip();
+        connectionHandler.sendMessage(sock, out);
 	}
 
 

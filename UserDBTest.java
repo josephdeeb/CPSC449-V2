@@ -53,7 +53,7 @@ public class UserDBTest {
         
         // Testing stuff for Chat saving / loading
         
-        ChatDB chat0 = ChatDB.create(new File("").getAbsolutePath(), 0, "chat0");
+        ChatDB chat0 = ChatDB.create(0, "chat0");
         
         chat0.addUser(0);
         chat0.addUser(1);
@@ -66,7 +66,7 @@ public class UserDBTest {
         
         chat0.saveChat();
         
-        ChatDB chatLoaded = ChatDB.loadChat(new File("").getAbsolutePath(), 0);
+        ChatDB chatLoaded = ChatDB.loadChat(0);
         System.out.println("done");
         
         Message msg2 = new Message("stuff", 0);

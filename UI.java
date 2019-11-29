@@ -8,7 +8,6 @@ public class UI {
     
     public UI() {
         this.input = new Scanner(System.in);
-        //input.nextLine();
     }
     
     
@@ -380,7 +379,7 @@ public class UI {
             case 0 :
                 return new UIPacket("mainmenu");
             case 1:
-                return new UIPacket("showchats");
+                return new UIPacket("chatslist");
             case 2:
                 return new UIPacket("createchat");
             default:
@@ -389,11 +388,24 @@ public class UI {
         }
     }
 
-    public UIPacket showChats() {
-        int selection = -1;
-        printTitle("Your Chats");
+    public UIPacket chatsLists() {
+        int selection = -2;
+        printTitle("Select a chat");
 
-        return new UIPacket("chatsmenu");
+
+        selection = Integer.parseInt(input.nextLine());
+
+
+        switch (selection) {
+            case -1:
+                return new UIPacket("chatsmenu");
+            default:
+                return new UIPacket("chatselected", new String[]{Integer.toString(selection)});
+        }
+    }
+
+    public UIPacket chatSelected() {
+        return null;
     }
 
     public UIPacket createChat() {
@@ -406,6 +418,6 @@ public class UI {
     }
 
     public UIPacket getChatHistory() {
-        
+        return null;
     }
 }
