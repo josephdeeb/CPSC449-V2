@@ -557,6 +557,41 @@ public class Server {
         return;
     }
     
+    public static void handleViewPublicChats(ByteBuffer message, SocketChannel sock) {
+    	String line = "";
+    	/*
+    	 * load public chats into memory first
+    	 */
+    	int i = 1000;
+    	while (loadChat(i)) {
+    		i++;
+    	}
+    	for (ChatDB chat : chats.values()) {
+    		if (chat.getcID() >= 1000) {
+    			line += + chat.getcID() + ": " + chat.getName() + "\n";
+    		}
+    	}
+    	ByteBuffer buf = ByteBuffer.allocate(ConnectionHandler.MAX_MESSAGE_SIZE);
+    	if (line.equals("")) {
+    		buf.putInt(-1);
+    		buf.flip();
+    		connectionHandler.sendMessage(sock, buf);
+    	}
+    	else {
+	    	line = line.substring(0, line.length()-1);
+	    	byte[] bytes = line.getBytes();
+	    	int len = bytes.length;
+	    	if (len > (ConnectionHandler.MAX_MESSAGE_SIZE - 4)) {
+	    		len = ConnectionHandler.MAX_MESSAGE_SIZE - 4;
+	    	}
+	    	buf.putInt(len);
+	    	buf.put(bytes, 0, len-1);
+	    	buf.flip();
+	    	connectionHandler.sendMessage(sock, buf);
+    	}
+    	return;
+    }
+    
     public static void handleSave(ByteBuffer message, SocketChannel sock) {
         // Message is irrelevant, just need to save all user and chat data
         users.saveAllUsers();
@@ -696,10 +731,46 @@ public class Server {
         connectionHandler.sendMessage(sock,  (short)0);
 
     }
+	public static void handleCreatePublicChat(ByteBuffer message, SocketChannel sock) {
+        int len = message.getInt();
+        String chatName = connectionHandler.retrieveString(message, len);
+        int CID = -1;
+
+        try {
+            File folder = new File(ChatDB.folderName);
+            if (!folder.exists()) {
+                if (!folder.mkdir())
+                    throw new IOException("ERROR: Could not create folder for ChatDB");
+            }
+            CID = folder.list().length;
+            if (CID > 0) {
+                CID += 1000;
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
+        ChatDB cdb = ChatDB.create(CID, chatName);
+
+        int UID = socketToUIDMap.get(sock);
+        cdb.addUser(UID);
+        cdb.saveChat();
+        chats.put(CID, cdb);
+
+        User sockUser = users.getUser(UID);
+        sockUser.addChat(CID);
+        users.saveAllUsers();
+
+        connectionHandler.sendMessage(sock,  (short)0);
+
+    }
 
 	public static void handleAddChatUser(ByteBuffer message, SocketChannel sock) {
         int CID = message.getInt();
         int UID = message.getInt();
+        System.out.println("UID = " + UID);
+        System.out.println("CID = " + CID);
+        System.out.flush();
         int SUID = socketToUIDMap.get(sock);
         ChatDB cdb = chats.get(CID);
         ArrayList<Integer> chatUsers = cdb.getUsers();
@@ -721,6 +792,49 @@ public class Server {
             connectionHandler.sendMessage(sock, (short)2);
         }
 	}
+	
+	public static void handleAddPublicChatUser(ByteBuffer message, SocketChannel sock) {
+        int CID = message.getInt();
+        int UID = message.getInt();
+        System.out.println("UID = " + UID);
+        System.out.println("CID = " + CID);
+        System.out.flush();
+        int SUID = socketToUIDMap.get(sock);
+        if (!chats.containsKey(CID)) {
+        	ChatDB temp = ChatDB.loadChat(CID);
+        	chats.put(CID, temp);
+        }
+        ChatDB cdb = chats.get(CID);
+        System.out.println(cdb);
+        System.out.flush();
+        ArrayList<Integer> chatUsers;
+        try {
+        	chatUsers = cdb.getUsers();
+        } catch (Exception e) {
+            cdb.addUser(UID);
+            User addUser = users.getUser(UID);
+            addUser.addChat(CID);
+            cdb.saveChat();
+            saveUsers();
+            // Send success message
+            connectionHandler.sendMessage(sock, (short)1);
+        	return;
+        }
+        if (chatUsers.contains(UID)) {
+            // Send error message, user already a member
+            connectionHandler.sendMessage(sock, (short) -1);
+        }
+        else {
+            cdb.addUser(UID);
+            User addUser = users.getUser(UID);
+            addUser.addChat(CID);
+            cdb.saveChat();
+            saveUsers();
+            // Send success message
+            connectionHandler.sendMessage(sock, (short)1);
+        }
+	}
+
 
     public static void handleRemoveChatUser(ByteBuffer message, SocketChannel sock) {
         int CID = message.getInt();
@@ -739,6 +853,13 @@ public class Server {
             }
         }
         connectionHandler.sendMessage(sock, (short)-1);
+    }
+    
+    public static void handleGetUID(ByteBuffer message, SocketChannel sock) {
+    	ByteBuffer response = ByteBuffer.allocate(4);
+    	response.putInt(socketToUIDMap.get(sock));
+    	response.flip();
+    	connectionHandler.sendMessage(sock, response);
     }
 
 	public static void handleGetChatList(ByteBuffer message, SocketChannel sock) {

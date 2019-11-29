@@ -144,6 +144,22 @@ public class Client {
             case "deletemessage":
                 nextUI =  parseDeleteMessage();
                 break;
+            
+            case "viewpublicchats":
+            	nextUI = parseViewPublicChats();
+            	break;
+            	
+            case "publicchatsmenu":
+            	nextUI = parsePublicChatsMenu();
+            	break;
+            
+            case "joinpublicchat":
+            	nextUI = parseJoinPublicChat();
+            	break;
+            
+            case "createpublicchat":
+            	nextUI = parseCreatePublicChat();
+            	break;
 
             case "save":
                 nextUI = parseSave();
@@ -494,6 +510,64 @@ public class Client {
         //UIPacket temp = ui.chatsMenu();
         return ui.chatsMenu().nextUI;
     }
+    
+    private static String parseJoinPublicChat() {
+    	ui.printTitle("Join a Public Chat");
+    	System.out.println("Please enter the ID of the public chat you would like to join");
+    	int cID = ui.input.nextInt();
+    	
+    	// request UID
+    	clientConnectionHandler.sendMessage((short)671);
+    	ByteBuffer response = clientConnectionHandler.receiveMessage();
+    	int myUID = response.getInt();
+    	
+    	buf.clear();
+    	buf.putShort((short)670);
+    	buf.putInt(cID);
+    	buf.putInt(myUID);
+    	buf.flip();
+    	clientConnectionHandler.sendMessage(buf);
+    	
+    	response = clientConnectionHandler.receiveMessage();
+    	
+    	short stuff =response.getShort();
+    	if (stuff == -1) {
+    		System.out.println("You are already a member of that chat channel!");
+    		System.out.println("Please press enter to continue");
+    		ui.input.nextLine();
+    		return "publicchatsmenu";
+    	}
+    	else if (stuff == 1) {
+    		System.out.println("Success!  You are now a member of that chat channel");
+    		System.out.println("Please press enter to continue");
+    		ui.input.nextLine();
+    		return "publicchatsmenu";
+    	}
+    	else {
+    		System.out.println("Something went wrong");
+    		System.out.println("Please press enter to continue");
+    		ui.input.nextLine();
+    		return "publicchatsmenu";
+    	}
+    }
+    
+    private static String parseCreatePublicChat() {
+    	ui.printTitle("Create Public Chat");
+    	System.out.println("Please enter the name of the chat you would like to create");
+    	String name = ui.input.nextLine();
+    	byte[] nameBytes = name.getBytes();
+    	
+    	ByteBuffer response = ByteBuffer.allocate(MAX_MESSAGE_SIZE);
+    	response.putShort((short)672);
+    	response.putInt(nameBytes.length);
+    	response.put(nameBytes);
+    	response.flip();
+    	clientConnectionHandler.sendMessage(response);
+    	
+    	System.out.println("Public Chat successfully made!");
+    	return "publicchatsmenu";
+    	
+    }
 
 
     private static String parseChatsList() {
@@ -615,6 +689,66 @@ public class Client {
         short type = response.getShort();
 
         return ui.deleteMessage(type).nextUI;
+    }
+    
+    private static String parsePublicChatsMenu() {
+    	ui.printTitle("Public Chats Menu");
+    	System.out.println("Please select one of the following options:");
+    	System.out.println("1\t: View all public chats");
+    	System.out.println("2\t: Join a public chat");
+    	System.out.println("3\t: Create a public chat");
+    	System.out.println("4\t: Return to the main menu");
+    	int selection;
+        try {
+            selection = Integer.parseInt(ui.input.nextLine());
+            if (selection < 1 || selection > 4)
+                throw new IOException("ERROR: You did not type a number associated with an available option.");
+        } catch (Exception e) {
+            System.out.println(e);
+            System.out.println("Please press enter to try again");
+            ui.input.nextLine();
+            return "PublicChatsMenu";
+        }
+        
+    	switch (selection) {
+    	case 1:
+    		return "viewpublicchats";
+    	case 2:
+    		return "joinpublicchat";
+    	case 3:
+    		return "createpublicchat";
+    	case 4:
+    		return "mainmenu";
+    	default:
+    		return "mainmenu";
+    	}
+    }
+    
+    private static String parseViewPublicChats() {
+    	ui.printTitle("Public Chat Channels");
+    	buf.clear();
+    	buf.putShort((short)669);
+    	buf.flip();
+    	
+    	clientConnectionHandler.sendMessage(buf);
+    	ByteBuffer response = clientConnectionHandler.receiveMessage();
+    	
+    	int len = response.getInt();
+    	if (len <= 0) {
+    		System.out.println("There are currently no public chat channels");
+    		System.out.println("Please press enter to continue");
+    		ui.input.nextLine();
+    		return "publicchatsmenu";
+    	}
+    	else {
+    		byte[] byteBuf = new byte[response.remaining()];
+    		response.get(byteBuf);
+    		String publicChats = new String(byteBuf);
+    		System.out.println(publicChats);
+    		System.out.println("\nPlease press enter to return to the public chat menu");
+    		ui.input.nextLine();
+    		return "publicchatsmenu";
+    	}
     }
 
     private static String parseCreateChat() {

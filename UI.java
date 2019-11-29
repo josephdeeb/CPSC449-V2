@@ -278,9 +278,10 @@ public class UI {
         System.out.println("4\t: Logout");
         System.out.println("5\t: TEMP upload");
         System.out.println("6\t: TEMP download");
+        System.out.println("7\t: Public Chats Menu");
         try {
             selection = Integer.parseInt(input.nextLine());
-            if (selection < 1 || selection > 6)
+            if (selection < 1 || selection > 7)
                 throw new IOException("ERROR: You did not type a number associated with an available option.");
         } catch (Exception e) {
             System.out.println(e);
@@ -302,6 +303,8 @@ public class UI {
                 return new UIPacket("uploadfile");
             case 6:
                 return new UIPacket("downloadfile");
+            case 7:
+            	return new UIPacket("publicchatsmenu");
             default:
                 System.out.println("This should've been impossible to reach...");
                 return new UIPacket("mainmenu");
