@@ -2,6 +2,7 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Scanner;
 
 public class Client {
     public static final int MAX_MESSAGE_SIZE = 4096;
@@ -64,6 +65,10 @@ public class Client {
             case "chatsmenu":
                 nextUI = parseChatsMenu();
                 break;
+
+            case "createchat":
+                nextUI = parseCreateChat();
+                break;
                 
             case "friendslist":
                 nextUI = parseFriendsList();
@@ -96,7 +101,7 @@ public class Client {
         
         return nextUI;
     }
-    
+
     private static String parseStartup() {
         return ui.startup().nextUI;
     }
@@ -178,15 +183,42 @@ public class Client {
     }
     
     private static String parseChatsMenu() {
-        
+        //UIPacket temp = ui.chatsMenu();
+        return ui.chatsMenu().nextUI;
+    }
+
+    private static String parseCreateChat() {
+        UIPacket temp = ui.createChat();
+        String chatName = temp.args[0];
+        buf.clear();
+        buf.putShort((short)17);
+        try {
+            buf.putInt(chatName.length());
+            buf.put(chatName.getBytes("UTF-8"));
+        } catch (Exception e) {
+            System.out.println("Something went wrong creating chat.");
+        }
+        buf.flip();
+        clientConnectionHandler.sendMessage(buf);
+
+        ByteBuffer response = clientConnectionHandler.receiveMessage();
+        short type = response.getShort();
+
+        if (type == (short) 0) {
+            System.out.println("Chat " + chatName + " has been created successfully!");
+            System.out.println("Press Enter to continue");
+            Scanner input = new Scanner(System.in);
+            input.nextLine();
+        }
+        return "chatsmenu";
     }
     
     private static String parseFriendsList() {
-        
+        return null;
     }
     
     private static String parseAccountSettings() {
-        
+        return null;
     }
     
     private static String parseUploadFile() {
@@ -293,7 +325,7 @@ public class Client {
         UIPacket temp = ui.downloadFile(0);
         String filename = temp.args[0];
         String downloadPathName = temp.args[1];
-        
+
         // FIRST OFF, make sure the file doesn't already exist and that we have permission to write to it
         File file = new File(downloadPathName + File.separator + filename);
         File folder = new File(downloadPathName);
@@ -305,7 +337,7 @@ public class Client {
             }
             else
                 throw new IOException("ERROR: The given folder you're downloading to does not exist");
-            
+
             if (file.exists()) {
                 throw new IOException("ERROR: There is already a file in the specified folder with that name");
             }
@@ -315,29 +347,29 @@ public class Client {
             ui.input.nextLine();
             return "mainmenu";
         }
-        
+
         // Sending our initial message
         ByteBuffer message = ByteBuffer.allocate(MAX_MESSAGE_SIZE);
-        
+
         // Put the type at the beginning
         message.putShort((short)303);
-        
+
         // Next turn filename into a byte array
         byte[] filenameBytes = filename.getBytes();
-        
+
         // Put filenameBytes length then the bytes into message
         message.putInt(filenameBytes.length);
         message.put(filenameBytes);
-        
+
         // Don't do the same for downloadPathName, server doesn't need to know it
-        
+
         // flip our message and send it!
         message.flip();
         clientConnectionHandler.sendMessage(message);
-        
+
         // Wait for the response
         message = clientConnectionHandler.receiveMessage();
-        
+
         short response = message.getShort();
         // Already transferring file
         if (response == (short)-1) {
@@ -363,7 +395,7 @@ public class Client {
             return "mainmenu";
         }
         // If we've gotten here, we're about to start accepting the file transfer
-        
+
         // First create the file and get the output stream
         OutputStream os = null;
         try {
@@ -377,15 +409,15 @@ public class Client {
             ui.input.nextLine();
             return "mainmenu";
         }
-        
+
         // Ask for bytes and receive them until there are none left!
         boolean transferring = true;
         while (transferring) {
             clientConnectionHandler.sendMessage((short)304);
             message = clientConnectionHandler.receiveMessage();
-            
+
             response = message.getShort();
-            
+
             if (response == -1) {
                 System.out.println("ERROR: The server says you are not transferring a file right now");
                 clientConnectionHandler.sendMessage((short)306);
@@ -410,11 +442,11 @@ public class Client {
                 ui.input.nextLine();
                 return "mainmenu";
             }
-            
+
             // Next get an int
-            
+
             int bytesToRead = message.getInt();
-            
+
             // If its -1, that means file transfer is complete
             if (bytesToRead == -1) {
                 System.out.println("Finished transferring file!");
@@ -444,7 +476,7 @@ public class Client {
         } catch (Exception e) {
             System.out.println("ERROR: Failed to close file stream");
         }
-        
+
         return "mainmenu";
     }
     
