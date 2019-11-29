@@ -1,5 +1,7 @@
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.*;
 
@@ -21,6 +23,7 @@ public class User {
 	private boolean transferringFile = false;
 	private boolean isLoggedIn;
 	private OutputStream fileStream;
+	private InputStream fileInputStream;
 	public long fileSize = 0;
 	public long fileBytesTransferred = 0;
 	
@@ -116,6 +119,29 @@ public class User {
 	
 	public OutputStream getFileStream() {
 	    return this.fileStream;
+	}
+	
+	public boolean setFileInputStream(String filePath) {
+	    File temp = new File(filePath);
+	    try {
+	        fileInputStream = new FileInputStream(temp);
+	        return true;
+	    } catch (Exception e) {
+	        System.out.println(e);
+	        return false;
+	    }
+	}
+	
+	public void closeFileInputStream() {
+	    try {
+	        fileStream.close();
+	    } catch (Exception e) {
+	        System.out.println(e);
+	    }
+	}
+	
+	public InputStream getFileInputStream() {
+	    return this.fileInputStream;
 	}
 	
 	public void setTransferringFile(boolean temp) {

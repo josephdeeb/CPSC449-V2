@@ -65,6 +65,7 @@ public class UI {
 	        printTitle("Login");
 	        System.out.println("Please enter your username:");
 	        username = input.nextLine();
+	        username = input.nextLine();
 	        System.out.println("Please enter your password:");
 	        password = input.nextLine();
 	        return new UIPacket("login", new String[] {username, password});
@@ -133,9 +134,11 @@ public class UI {
         System.out.println("2\t: Friends List");
         System.out.println("3\t: Account Settings");
         System.out.println("4\t: Logout");
+        System.out.println("5\t: TEMP upload");
+        System.out.println("6\t: TEMP download");
         try {
             selection = input.nextInt();
-            if (selection < 1 || selection > 4)
+            if (selection < 1 || selection > 6)
                 throw new IOException("ERROR: You did not type a number associated with an available option.");
         } catch (Exception e) {
             System.out.println(e);
@@ -153,6 +156,10 @@ public class UI {
                 return new UIPacket("accountsettings");
             case 4:
                 return new UIPacket("logout");
+            case 5:
+                return new UIPacket("uploadfile");
+            case 6:
+                return new UIPacket("downloadfile");
             default:
                 System.out.println("This should've been impossible to reach...");
                 return new UIPacket("mainmenu");
@@ -207,16 +214,16 @@ public class UI {
         return new UIPacket("startup"); //unknown state
     }
 
-    public UIPacket downloadFile() {
+    public UIPacket downloadFile(int state) {
         printTitle("Download File");
         System.out.println("Please enter the name of the file you would like to download");
         String fileName = input.nextLine();
+        fileName = input.nextLine();
         
-        System.out.println("Please enter the full path of the directory you would like to download the file to");
+        System.out.println("Please enter the full path of the directory you would like to download the file to (excluding the file you're about to download)");
         String downloadPathName = input.nextLine();
         
         return new UIPacket("downloadfile", new String[] {fileName, downloadPathName});
-        
     }
     
     public void printTitle(String title) {

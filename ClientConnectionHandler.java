@@ -57,8 +57,22 @@ public class ClientConnectionHandler {
         }
     }
     
+    public boolean sendMessage(short msg) {
+        try {
+            ByteBuffer buf = ByteBuffer.allocate(2);
+            buf.putShort(msg);
+            buf.flip();
+            this.sendMessage(buf);
+            return true;
+        } catch (Exception e) {
+            System.out.println(e);
+            return false;
+        }
+    }
+    
     public boolean sendMessage(ByteBuffer message) {
         try {
+            Thread.sleep(1);
             byte[] tempBytes = new byte[message.remaining()];
             message.get(tempBytes);
             outBuffer.write(tempBytes);

@@ -1,7 +1,9 @@
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -221,7 +223,13 @@ public class Client {
             message = clientConnectionHandler.receiveMessage();
             short response = message.getShort();
             
-            if (response == -1) {
+            if (response == -2) {
+                System.out.println("ERROR: The server thinks you are already transferring a file");
+                System.out.println("Please press enter to continue");
+                ui.input.nextLine();
+                return "mainmenu";
+            }
+            else if (response == -1) {
                 System.out.println("ERROR: A file with that name already exists on the server");
                 System.out.println("Please press enter to continue");
                 ui.input.nextLine();
@@ -272,9 +280,7 @@ public class Client {
             }
             
             // Once we've finished sending the file, send the teardown message
-            buf.putShort((short)302);
-            buf.flip();
-            clientConnectionHandler.sendMessage(buf);
+            clientConnectionHandler.sendMessage((short)302);
             System.out.println("File upload successful!");
             System.out.println("Please press enter to return to the main menu");
             ui.input.nextLine();
@@ -289,8 +295,162 @@ public class Client {
     }
     
     private static String parseDownloadFile() {
-        UIPacket temp = ui.downloadFile();
-        return "";
+        UIPacket temp = ui.downloadFile(0);
+        String filename = temp.args[0];
+        String downloadPathName = temp.args[1];
+        
+        // FIRST OFF, make sure the file doesn't already exist and that we have permission to write to it
+        File file = new File(downloadPathName + File.separator + filename);
+        File folder = new File(downloadPathName);
+        try {
+            if (folder.exists()) {
+                if (folder.canWrite()) {}
+                else
+                    throw new IOException("ERROR: You do not have permission to write to the given folder");
+            }
+            else
+                throw new IOException("ERROR: The given folder you're downloading to does not exist");
+            
+            if (file.exists()) {
+                throw new IOException("ERROR: There is already a file in the specified folder with that name");
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+            System.out.println("Please press enter to continue");
+            ui.input.nextLine();
+            return "mainmenu";
+        }
+        
+        // Sending our initial message
+        ByteBuffer message = ByteBuffer.allocate(MAX_MESSAGE_SIZE);
+        
+        // Put the type at the beginning
+        message.putShort((short)303);
+        
+        // Next turn filename into a byte array
+        byte[] filenameBytes = filename.getBytes();
+        
+        // Put filenameBytes length then the bytes into message
+        message.putInt(filenameBytes.length);
+        message.put(filenameBytes);
+        
+        // Don't do the same for downloadPathName, server doesn't need to know it
+        
+        // flip our message and send it!
+        message.flip();
+        clientConnectionHandler.sendMessage(message);
+        
+        // Wait for the response
+        message = clientConnectionHandler.receiveMessage();
+        
+        short response = message.getShort();
+        // Already transferring file
+        if (response == (short)-1) {
+            System.out.println("ERROR: You are already transferring a file, according to the server");
+            System.out.println("Please press enter to continue");
+            ui.input.nextLine();
+            return "mainmenu";
+        }
+        else if (response == (short)2) {
+            System.out.println("ERROR: Requested file " + filename + " does not exist on the server.");
+            System.out.println("Please press enter to continue");
+            ui.input.nextLine();
+            return "mainmenu";
+        }
+        // Success!  Start getting ready to read the file bytes
+        else if (response == (short)1) {
+            System.out.println("Starting file transfer...");
+        }
+        else {
+            System.out.println("ERROR: Unknown response from server");
+            System.out.println("Please press enter to continue");
+            ui.input.nextLine();
+            return "mainmenu";
+        }
+        // If we've gotten here, we're about to start accepting the file transfer
+        
+        // First create the file and get the output stream
+        OutputStream os = null;
+        try {
+            file.createNewFile();
+            os = new FileOutputStream(file);
+        } catch (Exception e) {
+            System.out.println("ERROR: Failed to create the local file.  Cancelling file transfer...");
+            // send cancel file transfer message to reset server session data
+            clientConnectionHandler.sendMessage((short)306);
+            System.out.println("Please press enter to continue");
+            ui.input.nextLine();
+            return "mainmenu";
+        }
+        
+        // Ask for bytes and receive them until there are none left!
+        boolean transferring = true;
+        while (transferring) {
+            clientConnectionHandler.sendMessage((short)304);
+            message = clientConnectionHandler.receiveMessage();
+            
+            response = message.getShort();
+            
+            if (response == -1) {
+                System.out.println("ERROR: The server says you are not transferring a file right now");
+                clientConnectionHandler.sendMessage((short)306);
+                System.out.println("Please press enter to continue");
+                ui.input.nextLine();
+                return "mainmenu";
+            }
+            else if (response == -2) {
+                System.out.println("ERROR: The server failed to read the file on the server-side");
+                clientConnectionHandler.sendMessage((short)306);
+                System.out.println("Please press enter to continue");
+                ui.input.nextLine();
+                return "mainmenu";
+            }
+            else if (response == 0) {
+                // success!
+            }
+            else {
+                System.out.println("ERROR: Unknown message from server.  Aborting file transfer.");
+                clientConnectionHandler.sendMessage((short)306);
+                System.out.println("Please press enter to continue");
+                ui.input.nextLine();
+                return "mainmenu";
+            }
+            
+            // Next get an int
+            
+            int bytesToRead = message.getInt();
+            
+            // If its -1, that means file transfer is complete
+            if (bytesToRead == -1) {
+                System.out.println("Finished transferring file!");
+                transferring = false;
+                break;
+            }
+            // Otherwise, we're about to write that many bytes to our file
+            else {
+                byte[] fileBytes = new byte[bytesToRead];
+                message.get(fileBytes);
+                try {
+                    os.write(fileBytes);
+                } catch (Exception e) {
+                    System.out.println("ERROR: Failed to write bytes from server to the file.  Aborting file transfer.");
+                    clientConnectionHandler.sendMessage((short)306);
+                    System.out.println("Please press enter to continue");
+                    ui.input.nextLine();
+                    return "mainmenu";
+                }
+            }
+        }
+        // After while(transferring)
+        System.out.println("File successfully transferred!");
+        clientConnectionHandler.sendMessage((short)306);
+        try {
+            os.close();
+        } catch (Exception e) {
+            System.out.println("ERROR: Failed to close file stream");
+        }
+        
+        return "mainmenu";
     }
     
     private static String parseMainMenu() {

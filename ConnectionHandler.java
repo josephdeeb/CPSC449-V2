@@ -245,7 +245,19 @@ public class ConnectionHandler {
         	case 302:
         	    Server.handleUploadFinish(message, sock);
         	    break;
-        	    
+        	// Download file
+        	case 303:
+        	    Server.handleDownload(message, sock);
+        	    break;
+        	// Mid-progress download file
+        	case 304:
+        	    Server.handleDownloadSendBytes(message, sock);
+        	    break;
+        	// Cancel download file
+        	case 306:
+        	    Server.handleDownloadCancel(message, sock);
+        	    break;
+        	// Save everything
         	case 310:
         	    Server.handleSave(message, sock);
         	    break;
@@ -260,6 +272,8 @@ public class ConnectionHandler {
     
     public String retrieveString(ByteBuffer msg, int len) {
     	byte[] temp = new byte[len];
+    	
+    	
     	
     	try {
     		msg.get(temp);
