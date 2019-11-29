@@ -123,6 +123,23 @@ public class UI {
         	return new UIPacket("register");
         }
     }
+	
+	public UIPacket acceptFriendRequest(short state){
+		if(state == -1){
+			System.out.println("Something went wrong!");
+		}
+		if(state == 0){
+			System.out.println("Type in the uID of the user you would like to accept a friend request from:");
+			String uID = input.nextLine();
+			return new UIPacket("acceptfriendrequest", new String[]{uID});
+		}
+		if(state == 1){
+			System.out.println("You are now friends!!!");
+			return new UIPacket("friendslist");
+		}
+		return new UIPacket("friendslist");
+	}
+	
     
 	public UIPacket friendsList(){
 		int selection = -1;
@@ -218,18 +235,35 @@ public class UI {
 			input.nextLine();
 			return new UIPacket("accountsettings"); 
 		}
-		else {
-		    return new UIPacket("accountsettings");
-        }
+		return new UIPacket("accountsettings");
+	}
+	
+	public UIPacket changePassword(short state){
+		if (state == -1){
+			System.out.println("ERROR: Server tells us we sent a bad message.  Please press enter to continue");
+    		input.nextLine();
+    		return new UIPacket("accountsettings");
+		}
+		else if(state == 0){
+			String newPassword = "";
+			System.out.println("Enter new password(Must be at least 1 character!)");
+			newPassword = input.nextLine();
+			return new UIPacket ("changepassword", new String[]{newPassword});
+		}
+		else if (state == 1){
+			System.out.println("Your password was succesfully changed!\nPress Enter to continue");
+			input.nextLine();
+			return new UIPacket("accountsettings");
+		}
+		return new UIPacket("accountsettings");
 	}
 	
 	public UIPacket sendFriendRequest(){
-		String friend = "";
+		String friend;
 		System.out.println("Enter the name of the user you would like to send a friend request to:");
 		friend = input.nextLine();
 		return new UIPacket("sendfriendrequest", new String[] {friend} );
 	}
-		
 	
 	
 	

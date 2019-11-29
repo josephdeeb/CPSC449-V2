@@ -106,6 +106,10 @@ public class User {
 	    return friendRequests;
 	}
 	
+	public void changePassword(String newPassword){
+		this.password = newPassword;
+	}
+	
 	public int validate(String name, String pass) {
 	    if (name.equals(this.username) && pass.equals(this.password))
 	        return this.uID;

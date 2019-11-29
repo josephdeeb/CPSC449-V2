@@ -143,12 +143,51 @@ public class Server {
     	users.saveAllUsers();
     }
 	
+	public static boolean handleChangePassword(ByteBuffer message, SocketChannel sock){
+		Integer uID = socketToUIDMap.get(sock);
+		
+		int len = message.getInt();
+        if (len > 129) {
+            connectionHandler.sendMessage(sock, (short) 6);
+			return false;
+        }
+
+        String userInfo = connectionHandler.retrieveString(message, len);
+
+        if (userInfo == null) {
+            connectionHandler.sendError(sock);
+            return false;
+        }
+		if(userInfo.length() == 0){
+			connectionHandler.sendError(sock);
+            return false;
+		}
+		else{
+			
+			users.users.get(uID).changePassword(userInfo);
+			connectionHandler.sendMessage(sock, (short)1);
+			return true;
+			
+		}
+		
+	}
+	public static boolean handleDeleteAccount(ByteBuffer message, SocketChannel sock){
+		Integer uID = socketToUIDMap.get(sock);
+		User temp = users.users.remove(uID);
+		users.nameToUIDMap.remove(temp.getusername());
+		while(users.users.values().remove(null));
+		while(users.nameToUIDMap.values().remove(null));
+		Server.handleSave(message, sock);
+		return true;
+	}
+	
 	public static boolean handleChangeUsername(ByteBuffer message, SocketChannel sock){
 		Integer uID = socketToUIDMap.get(sock);
 		
 		int len = message.getInt();
         if (len > 129) {
             connectionHandler.sendMessage(sock, (short) 6);
+			return false;
         }
 
         String userInfo = connectionHandler.retrieveString(message, len);
@@ -162,24 +201,76 @@ public class Server {
 			return false;
 		}
 		else{
+			ArrayList<Integer> friends = users.getUser(uID).getFriends();
 			Integer uIDofTheUser= users.nameToUIDMap.remove(uID);
 			users.nameToUIDMap.put(userInfo, uIDofTheUser);
+
+			connectionHandler.sendMessage(sock, (short)1);
 			return true;
+			
+
 		}
+		
+	}
+	
+	public static boolean handleAcceptFriendRequest(ByteBuffer message, SocketChannel sock){
+		Integer uID = socketToUIDMap.get(sock);
+		
+		int len = message.getInt();
+        if (len > 129) {
+            connectionHandler.sendMessage(sock, (short) -1);
+        }
+        String userInfo = connectionHandler.retrieveString(message, len);
+		int friendID = Integer.parseInt(userInfo);
+		
+        if (userInfo == null) {
+            connectionHandler.sendError(sock);
+            return false;
+        }
+		else{}
+		User temp = users.users.get(friendID);
+		temp.addFriend(uID);
+		connectionHandler.sendMessage(sock, (short) 1);
+		return true;
+		
 		
 	}
 	
 	
 	public static boolean handleSendFriendRequest(ByteBuffer message, SocketChannel sock){
 		Integer uID = socketToUIDMap.get(sock);
-		String friendlist = "";
 		
-		ArrayList<Integer> friends = users.getUser(uID).getFriends();
+		int len = message.getInt();
+        if (len > 129) {
+            connectionHandler.sendMessage(sock, (short) 2);
+        }
+        String userInfo = connectionHandler.retrieveString(message, len);
+		int friendID = Integer.parseInt(userInfo);
 		
-		//WORK ON LATER
+        if (userInfo == null) {
+            connectionHandler.sendError(sock);
+            return false;
+        }
+		User temp = users.users.get(friendID);
+		temp.addFriendRequest(uID);
+		connectionHandler.sendMessage(sock, (short) 1);
+		return true;
+		
+		
+	}
+	
+	public static boolean handleDisplayFriendRequests(ByteBuffer message, SocketChannel sock){
+		Integer uID = socketToUIDMap.get(sock);
+		String friendrequests = "";
+		
+		ArrayList<Integer> requests = users.getUser(uID).getFriendRequests();
+		
+		for(int i = 0; i<requests.size(); i++){
+			friendrequests = friendrequests + " " + (users.getUser(requests.get(i)).getusername());
+		}
 		ByteBuffer buf = ByteBuffer.allocate(ConnectionHandler.MAX_MESSAGE_SIZE);
-		byte[] bytes = new byte[friendlist.length()];
-		bytes = friendlist.getBytes();
+		byte[] bytes = new byte[friendrequests.length()];
+		bytes = friendrequests.getBytes();
 		buf.putInt(bytes.length);
 		buf.put(bytes);
 		buf.flip();

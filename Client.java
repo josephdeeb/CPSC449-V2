@@ -92,29 +92,32 @@ public class Client {
 				nextUI = parseSendFriendRequest();
 				break;
 
+				
 			case "viewfriendrequests":
-				//nextUI = parseViewFriendRequests();
+				nextUI = parseViewFriendRequests();
 				break;
-
+				
 			case "acceptfriendrequest":
-				//nextUI = parseAcceptFriendRequest();
+				nextUI = parseAcceptFriendRequest();
 				break;
+                
 
             case "accountsettings":
                 nextUI = parseAccountSettings();
                 break;
 
 			case "changeusername":
-				//nextUI = parseChangeUsername();
+				nextUI = parseChangeUsername();
 				break;
 
 			case "changepassword":
-				//nextUI = parseChangePassword();
+				nextUI = parseChangePassword();
 				break;
 
 			case "deleteaccout":
-				//nextUI = parseDeleteAccout();
+				nextUI = parseDeleteAccout();
 				break;
+				
 
             case "uploadfile":
                 nextUI = parseUploadFile();
@@ -147,9 +150,79 @@ public class Client {
     }
 
 
+	public static String parseViewFriendRequests(){
+		buf.clear();
+        buf.putShort((short)5);
+		
+		buf.flip();
+        
+        clientConnectionHandler.sendMessage(buf);
+		buf.clear();
+		
+		ByteBuffer response = clientConnectionHandler.receiveMessage();
+        int stringSize = response.getInt();
+		
+		byte[] stringBytes = new byte[stringSize];
+		
+		response.get(stringBytes);
+		
+		String friends = new String(stringBytes);
+
+        //ui.displayFriends(friends);
+		System.out.println(friends);
+		return"friendslist";
+	}
 
 
-    public static String parseChangeUserName(){
+
+	public static String parseAcceptFriendRequest(){
+		UIPacket temp = ui.acceptFriendRequest((short) 0);
+		String msg = temp.args[0];
+		 buf.clear();
+		 buf.putShort((short)6);
+		 try{
+			 buf.putInt(msg.length());
+			 buf.put(msg.getBytes("UTF-8"));
+		 } catch(Exception e){
+			 System.out.println("Errpr: could not get bytes from the msg in parseChangeUserName");
+			 return "accountsettings";
+		 }
+
+		 buf.flip();
+
+        clientConnectionHandler.sendMessage(buf);
+
+        ByteBuffer response = clientConnectionHandler.receiveMessage();
+
+        short type = response.getShort();
+		if(type == -1){
+			System.out.println("Error");
+			return "friendslist";
+		}
+		if(type == 7){
+			System.out.println("");
+			return"friendslist";
+		}
+        if (type == 1) {
+            
+        }
+        return ui.acceptFriendRequest(type).nextUI;
+    }
+		
+		
+		
+
+    public static String parseDeleteAccout(){
+		buf.clear();
+		buf.putShort((short) 666);
+		buf.flip();
+		clientConnectionHandler.sendMessage(buf);
+		return "exit";
+		
+	}
+	
+	public static String parseChangeUsername(){
+
 		UIPacket temp = ui.changeUsername((short) 0);
 		String msg = temp.args[0];
 		 buf.clear();
@@ -182,9 +255,39 @@ public class Client {
         }
         return ui.changeUsername(type).nextUI;
     }
-
-
-
+	
+	public static String parseChangePassword(){
+		UIPacket temp = ui.changePassword((short) 0);
+		String msg = temp.args[0];
+		
+		buf.clear();
+		 buf.putShort((short)401);
+		 try{
+			 buf.putInt(msg.length());
+			 buf.put(msg.getBytes("UTF-8"));
+		 } catch(Exception e){
+			 System.out.println("Errpr: could not get bytes from the msg in parseChangePassword");
+			 return "accountsettings";
+		 }
+		 
+		 buf.flip();
+        
+        clientConnectionHandler.sendMessage(buf);
+        
+        ByteBuffer response = clientConnectionHandler.receiveMessage();
+        short type = response.getShort();
+		if(type == 6){
+			System.out.println("Error");
+			return "accountsettings";
+		}
+		return ui.changePassword(type).nextUI;
+		}
+		
+		
+	
+		 
+		
+	
 
 	private static String parseSendFriendRequest() {
 		UIPacket temp = ui.sendFriendRequest();
@@ -249,6 +352,29 @@ public class Client {
 		return"friendslist";
         
     }
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	private static String parseAccountSettings(){
+		return ui.accountSettings().nextUI;
+	}
+	
+	private static String parseFriendsList(){
+		return ui.friendsList().nextUI;
+	}
+	
+	
+	
+	
+	
 	
 	
 
@@ -455,14 +581,6 @@ public class Client {
         return "chatsmenu";
     }
 
-    
-    private static String parseFriendsList() {
-        return null;
-    }
-    
-    private static String parseAccountSettings() {
-        return null;
-    }
     
     private static String parseUploadFile() {
         UIPacket temp = ui.uploadFile();
@@ -744,5 +862,6 @@ public class Client {
         
         return "startup";
     }
+	
     
 }

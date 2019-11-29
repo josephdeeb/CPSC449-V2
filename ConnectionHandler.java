@@ -223,6 +223,12 @@ public class ConnectionHandler {
 				break;
 			case 4:
 				Server.handleSendFriendRequest(message, sock);
+				break;
+			case 5:
+				Server.handleDisplayFriendRequests(message, sock);
+				break;
+			case 6:
+				Server.handleAcceptFriendRequest(message, sock);
 			
             // send message to chat
             case 14:
@@ -277,6 +283,12 @@ public class ConnectionHandler {
         	    break;
 			case 400:
 				Server.handleChangeUsername(message, sock);
+				break;
+			case 401:
+				Server.handleChangePassword(message, sock);
+				break;
+			case 666:
+				Server.handleDeleteAccount(message, sock);
 				break;
         		
         default:
