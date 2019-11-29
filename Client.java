@@ -12,6 +12,7 @@ public class Client {
     private static boolean running;
     private static ByteBuffer buf;
     public static String username = "";
+    public static int currentChatID;
     
     public static void main(String[] args) {
         if (args.length != 2) {
@@ -86,6 +87,11 @@ public class Client {
                 nextUI = parseDownloadFile();
                 break;
 
+            case "sendchatmessage":
+                nextUI = parseSendChatMessage();
+                break;
+            case "getchathistory":
+                nextUI = parseGetChatHistory();
             case "deletemessage":
                 nextUI =  parseDeleteMessage();
                 break;
@@ -160,12 +166,62 @@ public class Client {
         return ui.register(type).nextUI;
     }
 
-    private static String parseDeleteMessage() {
-        UIPacket temp = ui.deleteMessage((short)0);
+    private static String parseSendChatMessage() {
+        UIPacket temp = ui.sendChatMessage((short)0);
         String msg = temp.args[0] + "," + temp.args[1];
         // args[0] = chatID, args[1] = messageContents
         buf.clear();
-        buf.putShort((short)1);
+        buf.putShort((short)14);
+        try {
+            buf.putInt(msg.length());
+            buf.put(String.valueOf(Client.currentChatID).getBytes("UTF-8"));
+            buf.put(msg.getBytes("UTF-8"));
+        } catch (Exception e) {
+            System.out.println("ERROR: Could not get bytes from the msg in parseSendChatMessage");
+            return "startup";
+        }
+        buf.flip();
+        clientConnectionHandler.sendMessage(buf);
+
+        ByteBuffer response = clientConnectionHandler.receiveMessage();
+        short type = response.getShort();
+
+        return ui.sendChatMessage(type).nextUI;
+    }
+
+    private static String parseGetChatHistory() {
+        UIPacket temp = ui.getChatHistory();
+        String msg = temp.args[0] + "," + Client.currentChatID;
+        // args[0] = messageContents
+        buf.clear();
+        buf.putShort((short)15);
+        try {
+            buf.putInt(msg.length());
+            buf.put(msg.getBytes("UTF-8"));
+        } catch (Exception e) {
+            System.out.println("ERROR: Could not get bytes from the msg in parseGetChatHistory");
+            return "startup";
+        }
+        buf.flip();
+        clientConnectionHandler.sendMessage(buf);
+
+        ByteBuffer response = clientConnectionHandler.receiveMessage();
+        short type = response.getShort();
+
+        return ui.printChatHistory(response.toString());
+    }
+
+    private static String parseChatsMenu() {
+        //UIPacket temp = ui.chatsMenu();
+        return ui.chatsMenu().nextUI;
+    }
+
+    private static String parseDeleteMessage() {
+        UIPacket temp = ui.deleteMessage((short)0);
+        String msg = temp.args[0] + "," + Client.currentChatID;
+        // args[0] = messageContents
+        buf.clear();
+        buf.putShort((short)16);
         try {
             buf.putInt(msg.length());
             buf.put(msg.getBytes("UTF-8"));
@@ -180,11 +236,6 @@ public class Client {
         short type = response.getShort();
 
         return ui.deleteMessage(type).nextUI;
-    }
-    
-    private static String parseChatsMenu() {
-        //UIPacket temp = ui.chatsMenu();
-        return ui.chatsMenu().nextUI;
     }
 
     private static String parseCreateChat() {
@@ -491,8 +542,7 @@ public class Client {
         message.putShort((short)310);
         message.flip();
         
-        clientConnectionHandler.sendMessage(message);
-        
+
         System.out.println("\n\nSave message sent successfully\n\n");
         
         return "startup";

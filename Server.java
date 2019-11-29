@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 public class Server {
     public static final String USER_DB_FILE_NAME = "users.csv";
@@ -141,7 +142,7 @@ public class Server {
     	users.saveAllUsers();
     }
 
-    public static boolean handleDeleteMessage(ByteBuffer message, SocketChannel sock) {
+    public static boolean handleSendChatMesssage(ByteBuffer message, SocketChannel sock) {
         int len = message.getInt();
         if (len > 129) {
             connectionHandler.sendMessage(sock, (short) 2);
@@ -161,9 +162,67 @@ public class Server {
 
         int cID = Integer.parseInt(userInfo.split(",")[0]);
         Message msg = new Message(userInfo.split(",")[1], socketToUIDMap.get(sock));
+        LinkedList<SocketChannel> socksToSendMessageTo = chats.get(cID).sendChatMessage(msg);
+        for (SocketChannel socket : socksToSendMessageTo) {
+            connectionHandler.sendMessage(socket, message) //TODO send chat message to users currently in chat (What function to call on client side?)
+        }
+        connectionHandler.sendMessage(sock, (short)1);  //send confirmation to sender
+        return true;
+    }
+
+    public static boolean handleDeleteMessage(ByteBuffer message, SocketChannel sock) {
+        int len = message.getInt();
+        if (len > 129) {
+            connectionHandler.sendMessage(sock, (short) 2);
+        }
+
+        String userInfo = connectionHandler.retrieveString(message, len);
+
+        if (userInfo == null) {
+            connectionHandler.sendError(sock);
+            return false;
+        }
+
+        if (userInfo.split(",").length != 2) {
+            connectionHandler.sendMessage(sock, (short) 1);
+            return false;
+        }
+
+        Message msg = new Message(userInfo.split(",")[0], socketToUIDMap.get(sock));
+        int cID = Integer.parseInt(userInfo.split(",")[1]);
+
+        connectionHandler.sendMessage(sock, (short)1)
+
         return chats.get(cID).deleteMessage(msg);
     }
 
+
+    public static boolean handleGetChatHistory(ByteBuffer message, SocketChannel sock) {
+        int len = message.getInt();
+        if (len > 129) {
+            connectionHandler.sendMessage(sock, (short) 2);
+        }
+
+        String userInfo = connectionHandler.retrieveString(message, len);
+
+        if (userInfo == null) {
+            connectionHandler.sendError(sock);
+            return false;
+        }
+
+        if (userInfo.split(",").length != 2) {
+            connectionHandler.sendMessage(sock, (short) 1);
+            return false;
+        }
+
+        Message msg = new Message(userInfo.split(",")[0], socketToUIDMap.get(sock));
+        int cID = Integer.parseInt(userInfo.split(",")[1]);
+
+        connectionHandler.sendMessage(sock, ((short)chats.get(cID).getChatHistory()).getBytes());
+
+        return true;
+
+    }
 
     public static void handleRegister(ByteBuffer message, SocketChannel sock) {
 	    // Take the length of the next string as an int
@@ -486,4 +545,10 @@ public class Server {
 
 	public static void handleGetChatList(ByteBuffer message, SocketChannel sock) {
 	}
+
+
+    public static HashMap<SocketChannel, Integer> getSocketToUIDMap() {
+        return socketToUIDMap;
+    }
+
 }

@@ -1,5 +1,9 @@
 import java.io.*;
+import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
 
 /*
  * This class represents a single chat's message history and users
@@ -178,6 +182,30 @@ public class ChatDB extends DB {
             }
         }
         return false;
+    }
+
+    public String getChatHistory() {
+        StringBuilder history = new StringBuilder();
+        for (Message msg : messages) {
+            history.append(msg);
+        }
+        return history.toString();
+    }
+
+    public LinkedList<SocketChannel> sendChatMessage(Message messageToSend) {
+        messages.add(messageToSend);
+
+        Map<Integer, SocketChannel> UIDToSockMap = new HashMap<>();
+        for (Map.Entry<SocketChannel, Integer> entry : Server.getSocketToUIDMap().entrySet()) {
+            UIDToSockMap.put(entry.getValue(), entry.getKey());
+        }
+
+        LinkedList<SocketChannel> socksToSendMessageTo = new LinkedList<>();
+        for (int u : users) {
+            socksToSendMessageTo.add(UIDToSockMap.get(u));
+        }
+
+        return socksToSendMessageTo;
     }
 
     public ArrayList<Integer> getUsers() {
