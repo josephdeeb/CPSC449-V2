@@ -1,7 +1,6 @@
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
@@ -125,10 +124,6 @@ public class Server {
         // Lo
         else
             return 2;
-    }
-
-    public static boolean deleteMessage(Message message, int cID) {
-        return chats.get(cID).deleteMessage(message);
     }
 
     public static boolean usernameExists(String username) {
@@ -356,10 +351,16 @@ public class Server {
 
         Message msg = new Message(userInfo.split(",")[0], socketToUIDMap.get(sock));
         int cID = Integer.parseInt(userInfo.split(",")[1]);
+        boolean deleted = chats.get(cID).deleteMessage(msg);
+        if(deleted) {
+            connectionHandler.sendMessage(sock, (short)1);
+        }
+        if(deleted) {
+            connectionHandler.sendMessage(sock, (short)2);
+        }
 
-        connectionHandler.sendMessage(sock, (short)1);
 
-        return chats.get(cID).deleteMessage(msg);
+        return true;
     }
 
 
@@ -381,10 +382,9 @@ public class Server {
             return false;
         }
 
-        Message msg = new Message(userInfo.split(",")[0], socketToUIDMap.get(sock));
-        int cID = Integer.parseInt(userInfo.split(",")[1]);
+        int cID = Integer.parseInt(userInfo.split(",")[0]);
 
-        //connectionHandler.sendMessage(sock, ((short)chats.get(cID).getChatHistory()).getBytes());
+        connectionHandler.sendMessage(sock, (chats.get(cID).getChatHistory()).getBytes());
 
         return true;
 

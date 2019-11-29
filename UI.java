@@ -1,7 +1,6 @@
 
 import java.io.File;
 import java.io.IOException;
-import java.net.IDN;
 import java.util.Scanner;
 
 public class UI {
@@ -65,6 +64,7 @@ public class UI {
 	        printTitle("Login");
 	        System.out.println("Please enter your username:");
 	        username = input.nextLine();
+            Client.username = username;
 	        System.out.println("Please enter your password:");
 	        password = input.nextLine();
 	        return new UIPacket("login", new String[] {username, password});
@@ -342,12 +342,12 @@ public class UI {
         else if (state == 1) {
             System.out.println("Delete message successful!\nPlease press enter to continue");
             input.nextLine();
-            return new UIPacket(""); // TODO: reroute to chatview
+            return new UIPacket("chatselected");
         }
         else if (state == 2) {
             System.out.println("Could not delete message.\nPlease press enter to continue");
             input.nextLine();
-            return new UIPacket(""); // TODO: reroute to chatview
+            return new UIPacket("chatselected");
         }
         System.out.println("Unknown state used in delete message");
         return new UIPacket("startup"); //unknown state
@@ -368,12 +368,12 @@ public class UI {
         else if (state == 1) {
             System.out.println("Send message successful!\nPlease press enter to continue");
             input.nextLine();
-            return new UIPacket(""); // TODO: reroute to chatview
+            return new UIPacket("chatselected"); // TODO: reroute to chatview
         }
         else if (state == 2) {
             System.out.println("Could not send message.\nPlease press enter to continue");
             input.nextLine();
-            return new UIPacket(""); // TODO: reroute to chatview
+            return new UIPacket("chatselected"); // TODO: reroute to chatview
         }
         System.out.println("Unknown state used in send message");
         return new UIPacket("startup"); //unknown state
@@ -455,10 +455,13 @@ public class UI {
         System.out.println("0\t: Add User");
         System.out.println("1\t: Remove User");
         System.out.println("2\t: Placeholder");
+        System.out.println("3\t: Send Message");
+        System.out.println("4\t: Delete Message");
+        System.out.println("5\t: View Chat History");
 
         try {
             selection = Integer.parseInt(input.nextLine());
-            if (selection < -1 || selection > 2)
+            if (selection < -1 || selection > 5)
                 throw new IOException("ERROR: You did not type a number associated with an available option.");
         } catch (Exception e) {
             System.out.println(e);
@@ -476,6 +479,12 @@ public class UI {
                 return new UIPacket("removeuser");
             case 2:
                 return new UIPacket("");
+            case 3:
+                return new UIPacket("sendmessage");
+            case 4:
+                return new UIPacket("deletemessage");
+            case 5:
+                return new UIPacket("getchathistory");
             default:
                 System.out.println("This should've been impossible to reach...");
                 return new UIPacket("chatsmenu");
@@ -491,8 +500,14 @@ public class UI {
         return new UIPacket("createChat", new String[] {chatName});
     }
 
-    public UIPacket getChatHistory() {
-        return null;
+    public UIPacket getChatHistory(String history) {
+        printTitle("Chat History");
+        if (history == null) {
+            System.out.println("There is no chat history");
+        } else {
+            System.out.println(history);
+        }
+        return new UIPacket("chatselected");
     }
 
     public UIPacket addUser() {

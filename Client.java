@@ -1,8 +1,5 @@
 import java.io.*;
-import java.net.IDN;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -127,7 +124,6 @@ public class Client {
 			case "deleteaccout":
 				nextUI = parseDeleteAccout();
 				break;
-				
 
             case "uploadfile":
                 nextUI = parseUploadFile();
@@ -140,8 +136,10 @@ public class Client {
             case "sendchatmessage":
                 nextUI = parseSendChatMessage();
                 break;
+
             case "getchathistory":
                 nextUI = parseGetChatHistory();
+                break;
 
             case "deletemessage":
                 nextUI =  parseDeleteMessage();
@@ -469,8 +467,7 @@ public class Client {
     }
     
     private static String parseGetChatHistory() {
-        UIPacket temp = ui.getChatHistory();
-        String msg = temp.args[0] + "," + Client.currentChatID;
+        String msg =  String.valueOf(Client.currentChatID);
         // args[0] = messageContents
         buf.clear();
         buf.putShort((short)15);
@@ -485,10 +482,7 @@ public class Client {
         clientConnectionHandler.sendMessage(buf);
 
         ByteBuffer response = clientConnectionHandler.receiveMessage();
-        short type = response.getShort();
-
-        //return ui.printChatHistory(response.toString());
-		return"";
+        return ui.getChatHistory(response.toString()).nextUI;
     }
     
     private static String parseChatsMenu() {
@@ -598,7 +592,7 @@ public class Client {
 
     private static String parseDeleteMessage() {
         UIPacket temp = ui.deleteMessage((short)0);
-        String msg = temp.args[0] + "," + temp.args[1];
+        String msg = temp.args[0] + "," + Client.currentChatID;
         // args[0] = chatID, args[1] = messageContents
         buf.clear();
         buf.putShort((short)1);
