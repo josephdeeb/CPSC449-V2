@@ -307,26 +307,29 @@ public class Server {
         int len = message.getInt();
         if (len > 129) {
             connectionHandler.sendMessage(sock, (short) 2);
+            return false;
         }
 
-        String userInfo = connectionHandler.retrieveString(message, len);
+        int cID = message.getInt();
+        
+        String text = connectionHandler.retrieveString(message, len);
 
-        if (userInfo == null) {
+        if (text == null) {
             connectionHandler.sendError(sock);
             return false;
         }
-
-        if (userInfo.split(",").length != 2) {
-            connectionHandler.sendMessage(sock, (short) 1);
-            return false;
-        }
-
-        int cID = Integer.parseInt(userInfo.split(",")[0]);
-        Message msg = new Message(userInfo.split(",")[1], socketToUIDMap.get(sock));
+        
+        
+        ChatDB chatToSendTo = chats.get(cID);
+        chatToSendTo.addMessage(new Message(text, socketToUIDMap.get(sock)));
+        chatToSendTo.saveChat();
+        /*
+        Message msg = new Message(text, socketToUIDMap.get(sock));
         LinkedList<SocketChannel> socksToSendMessageTo = chats.get(cID).sendChatMessage(msg);
         for (SocketChannel socket : socksToSendMessageTo) {
             connectionHandler.sendMessage(socket, message); //TODO send chat message to users currently in chat (What function to call on client side?)
         }
+        */
         connectionHandler.sendMessage(sock, (short)1);  //send confirmation to sender
         return true;
     }
@@ -377,14 +380,19 @@ public class Server {
             return false;
         }
 
-        if (userInfo.split(",").length != 2) {
-            connectionHandler.sendMessage(sock, (short) 1);
-            return false;
-        }
-
         int cID = Integer.parseInt(userInfo.split(",")[0]);
+        String history = chats.get(cID).getChatHistory();
+        ByteBuffer buf = ByteBuffer.allocate(ConnectionHandler.MAX_MESSAGE_SIZE);
+        byte[] historyBuf = history.getBytes();
+        len = historyBuf.length;
+        if (len > (ConnectionHandler.MAX_MESSAGE_SIZE - 4)) {
+        	len = ConnectionHandler.MAX_MESSAGE_SIZE - 4;
+        }
+        buf.putInt(len);
+        buf.put(historyBuf, 0, len);
+        buf.flip();
 
-        connectionHandler.sendMessage(sock, (chats.get(cID).getChatHistory()).getBytes());
+        connectionHandler.sendMessage(sock, buf);
 
         return true;
 

@@ -445,13 +445,13 @@ public class Client {
     
 	private static String parseSendChatMessage() {
         UIPacket temp = ui.sendChatMessage((short)0);
-        String msg = temp.args[0] + "," + temp.args[1];
-        // args[0] = chatID, args[1] = messageContents
+        String msg = temp.args[0];
+        // args[0] = messageContents
         buf.clear();
         buf.putShort((short)14);
         try {
-            buf.putInt(msg.length());
-            buf.put(String.valueOf(Client.currentChatID).getBytes("UTF-8"));
+        	buf.putInt(msg.length());
+            buf.putInt(currentChatID);
             buf.put(msg.getBytes("UTF-8"));
         } catch (Exception e) {
             System.out.println("ERROR: Could not get bytes from the msg in parseSendChatMessage");
@@ -482,7 +482,12 @@ public class Client {
         clientConnectionHandler.sendMessage(buf);
 
         ByteBuffer response = clientConnectionHandler.receiveMessage();
-        return ui.getChatHistory(response.toString()).nextUI;
+        int len = response.getInt();
+        byte[] historyBuf = new byte[len];
+        response.get(historyBuf);
+        System.out.println(new String(historyBuf));
+        
+        return ui.getChatHistory(new String(historyBuf)).nextUI;
     }
     
     private static String parseChatsMenu() {
@@ -595,7 +600,7 @@ public class Client {
         String msg = temp.args[0] + "," + Client.currentChatID;
         // args[0] = chatID, args[1] = messageContents
         buf.clear();
-        buf.putShort((short)1);
+        buf.putShort((short)16);
         try {
             buf.putInt(msg.length());
             buf.put(msg.getBytes("UTF-8"));
@@ -672,13 +677,13 @@ public class Client {
                 System.out.println("ERROR: The server thinks you are already transferring a file");
                 System.out.println("Please press enter to continue");
                 ui.input.nextLine();
-                return "mainmenu";
+                return "chatselected";
             }
             else if (response == -1) {
                 System.out.println("ERROR: A file with that name already exists on the server");
                 System.out.println("Please press enter to continue");
                 ui.input.nextLine();
-                return "mainmenu";
+                return "chatselected";
             }
             else if (response == 1) {
                 System.out.println("Starting file transfer...");
@@ -687,20 +692,20 @@ public class Client {
                 System.out.println("ERROR: Server cannot accept your file.");
                 System.out.println("Please press enter to continue");
                 ui.input.nextLine();
-                return "mainmenu";
+                return "chatselected";
             }
             else {
                 System.out.println("ERROR: Unknown error type");
                 System.out.println("Please press enter to return to the main menu");
                 ui.input.nextLine();
-                return "mainmenu";
+                return "chatselected";
             }
             
         } catch (Exception e) {
             System.out.println(e);
             System.out.println("Please press enter to continue");
             ui.input.nextLine();
-            return "mainmenu";
+            return "chatselected";
         }
         
         try {
@@ -725,17 +730,18 @@ public class Client {
             }
             
             // Once we've finished sending the file, send the teardown message
+            Thread.sleep(75);
             clientConnectionHandler.sendMessage((short)302);
             System.out.println("File upload successful!");
             System.out.println("Please press enter to return to the main menu");
             ui.input.nextLine();
-            return "mainmenu";
+            return "chatselected";
             
         } catch (Exception e) {
             System.out.println(e);
             System.out.println("Please press enter to continue");
             ui.input.nextLine();
-            return "mainmenu";
+            return "chatselected";
         }
     }
     
@@ -763,7 +769,7 @@ public class Client {
             System.out.println(e);
             System.out.println("Please press enter to continue");
             ui.input.nextLine();
-            return "mainmenu";
+            return "chatselected";
         }
 
         // Sending our initial message
@@ -794,13 +800,13 @@ public class Client {
             System.out.println("ERROR: You are already transferring a file, according to the server");
             System.out.println("Please press enter to continue");
             ui.input.nextLine();
-            return "mainmenu";
+            return "chatselected";
         }
         else if (response == (short)2) {
             System.out.println("ERROR: Requested file " + filename + " does not exist on the server.");
             System.out.println("Please press enter to continue");
             ui.input.nextLine();
-            return "mainmenu";
+            return "chatselected";
         }
         // Success!  Start getting ready to read the file bytes
         else if (response == (short)1) {
@@ -810,7 +816,7 @@ public class Client {
             System.out.println("ERROR: Unknown response from server");
             System.out.println("Please press enter to continue");
             ui.input.nextLine();
-            return "mainmenu";
+            return "chatselected";
         }
         // If we've gotten here, we're about to start accepting the file transfer
 
@@ -825,7 +831,7 @@ public class Client {
             clientConnectionHandler.sendMessage((short)306);
             System.out.println("Please press enter to continue");
             ui.input.nextLine();
-            return "mainmenu";
+            return "chatselected";
         }
 
         // Ask for bytes and receive them until there are none left!
@@ -838,27 +844,42 @@ public class Client {
 
             if (response == -1) {
                 System.out.println("ERROR: The server says you are not transferring a file right now");
+                try {
+                	Thread.sleep(50);
+                } catch (Exception a) {
+                	
+                }
                 clientConnectionHandler.sendMessage((short)306);
                 System.out.println("Please press enter to continue");
                 ui.input.nextLine();
-                return "mainmenu";
+                return "chatselected";
             }
             else if (response == -2) {
                 System.out.println("ERROR: The server failed to read the file on the server-side");
+                try {
+                	Thread.sleep(50);
+                } catch (Exception b) {
+                	
+                }
                 clientConnectionHandler.sendMessage((short)306);
                 System.out.println("Please press enter to continue");
                 ui.input.nextLine();
-                return "mainmenu";
+                return "chatselected";
             }
             else if (response == 0) {
                 // success!
             }
             else {
                 System.out.println("ERROR: Unknown message from server.  Aborting file transfer.");
+                try {
+                	Thread.sleep(50);
+                } catch (Exception c) {
+                	
+                }
                 clientConnectionHandler.sendMessage((short)306);
                 System.out.println("Please press enter to continue");
                 ui.input.nextLine();
-                return "mainmenu";
+                return "chatselected";
             }
 
             // Next get an int
@@ -879,15 +900,25 @@ public class Client {
                     os.write(fileBytes);
                 } catch (Exception e) {
                     System.out.println("ERROR: Failed to write bytes from server to the file.  Aborting file transfer.");
+                    try {
+                    	Thread.sleep(50);
+                    } catch (Exception f) {
+                    	
+                    }
                     clientConnectionHandler.sendMessage((short)306);
                     System.out.println("Please press enter to continue");
                     ui.input.nextLine();
-                    return "mainmenu";
+                    return "chatselected";
                 }
             }
         }
         // After while(transferring)
         System.out.println("File successfully transferred!");
+        try {
+        	Thread.sleep(50);
+        } catch (Exception d) {
+        	
+        }
         clientConnectionHandler.sendMessage((short)306);
         try {
             os.close();
@@ -895,7 +926,7 @@ public class Client {
             System.out.println("ERROR: Failed to close file stream");
         }
 
-        return "mainmenu";
+        return "chatselected";
     }
     
     private static String parseMainMenu() {

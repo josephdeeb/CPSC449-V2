@@ -174,11 +174,12 @@ public class ChatDB extends DB {
     }
 
     public String getChatHistory() {
-        StringBuilder history = new StringBuilder();
+        String history = "";
         for (Message msg : messages) {
-            history.append(msg);
+            history += msg.getContents() + "\n";
         }
-        return history.toString();
+        System.out.println(history);
+        return history;
     }
 
     public LinkedList<SocketChannel> sendChatMessage(Message messageToSend) {

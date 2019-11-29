@@ -361,9 +361,9 @@ public class UI {
         }
         else if(state == 0) {
             printTitle("Send chat message");
-            System.out.println("Please enter the contents of the message you would like to delete");
+            System.out.println("Please enter the contents of the message you would like to send");
             String messageContents = input.nextLine();
-            return new UIPacket("deleteMessage", new String[]{messageContents});
+            return new UIPacket("chatselected", new String[]{messageContents});
         }
         else if (state == 1) {
             System.out.println("Send message successful!\nPlease press enter to continue");
@@ -458,10 +458,12 @@ public class UI {
         System.out.println("3\t: Send Message");
         System.out.println("4\t: Delete Message");
         System.out.println("5\t: View Chat History");
+        System.out.println("6\t: Upload file");
+        System.out.println("7\t: Download file");
 
         try {
             selection = Integer.parseInt(input.nextLine());
-            if (selection < -1 || selection > 5)
+            if (selection < -1 || selection > 7)
                 throw new IOException("ERROR: You did not type a number associated with an available option.");
         } catch (Exception e) {
             System.out.println(e);
@@ -480,11 +482,15 @@ public class UI {
             case 2:
                 return new UIPacket("");
             case 3:
-                return new UIPacket("sendmessage");
+                return new UIPacket("sendchatmessage");
             case 4:
                 return new UIPacket("deletemessage");
             case 5:
                 return new UIPacket("getchathistory");
+            case 6:
+            	return new UIPacket("uploadfile");
+            case 7:
+            	return new UIPacket("downloadfile");
             default:
                 System.out.println("This should've been impossible to reach...");
                 return new UIPacket("chatsmenu");

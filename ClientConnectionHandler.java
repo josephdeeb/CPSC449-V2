@@ -72,7 +72,7 @@ public class ClientConnectionHandler {
     
     public boolean sendMessage(ByteBuffer message) {
         try {
-            Thread.sleep(1);
+            Thread.sleep(10);
             byte[] tempBytes = new byte[message.remaining()];
             message.get(tempBytes);
             outBuffer.write(tempBytes);
