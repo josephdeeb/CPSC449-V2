@@ -137,6 +137,43 @@ public class Client {
         return nextUI;
     }
 	
+	public static String parseChangeUserName(){
+		UIPacket temp = ui.changeUsername((short) 0);
+		String msg = temp.args[0];
+		 buf.clear();
+		 buf.putShort((short)400);
+		 try{
+			 buf.putInt(msg.length());
+			 buf.put(msg.getBytes("UTF-8"));
+		 } catch(Exception e){
+			 System.out.println("Errpr: could not get bytes from the msg in parseChangeUserName");
+			 return "accountsettings";
+		 }
+		 
+		 buf.flip();
+        
+        clientConnectionHandler.sendMessage(buf);
+        
+        ByteBuffer response = clientConnectionHandler.receiveMessage();
+        
+        short type = response.getShort();
+		if(type == 6){
+			System.out.println("Error");
+			return "accountsettings";
+		}
+		if(type == 7){
+			System.out.println("You can't change your username to this because it's already taken :(");
+			return"accountsettings";
+		}
+        if (type == 1) {
+            username = temp.args[0];
+        }
+        return ui.changeUsername(type).nextUI;
+    }
+		 
+		
+	
+	
 	private static String parseSendFriendRequest() {
 		UIPacket temp = ui.sendFriendRequest();
 		String msg = temp.args[0];

@@ -142,6 +142,32 @@ public class Server {
     	users.saveAllUsers();
     }
 	
+	public static boolean handleChangeUsername(ByteBuffer message, SocketChannel sock){
+		Integer uID = socketToUIDMap.get(sock);
+		
+		int len = message.getInt();
+        if (len > 129) {
+            connectionHandler.sendMessage(sock, (short) 6);
+        }
+
+        String userInfo = connectionHandler.retrieveString(message, len);
+
+        if (userInfo == null) {
+            connectionHandler.sendError(sock);
+            return false;
+        }
+		if(Server.usernameExists(userInfo)){
+			connectionHandler.sendMessage(sock, (short) 7);
+			return false;
+		}
+		else{
+			Integer uIDofTheUser= users.nameToUIDMap.remove(uID);
+			users.nameToUIDMap.put(userInfo, uIDofTheUser);
+			
+		}
+		
+	}
+	
 	
 	public static boolean handleSendFriendRequest(ByteBuffer message, SocketChannel sock){
 		Integer uID = socketToUIDMap.get(sock);

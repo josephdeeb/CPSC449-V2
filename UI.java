@@ -201,6 +201,26 @@ public class UI {
         }
     }
 	
+	public UIPacket changeUsername(short state){
+		if (state == -1) {
+    		System.out.println("ERROR: Server tells us we sent a bad message.  Please press enter to continue");
+    		input.nextLine();
+    		return new UIPacket("accountsettings");
+    	}
+		else if(state == 0){
+			String newName = "";
+			System.out.println("Enter new userName");
+			newName = input.nextLine();
+			return new UIPacket ("changeusername", new String[]{newName});
+		}
+		else if(state == 1){
+			System.out.println("Username changed! Congrats," + Client.username);
+			System.out.println("Press Enter to continue...");
+			input.nextLine();
+			return new UIPacket("accountsettings"); 
+		}
+	}
+	
 	public UIPacket sendFriendRequest(){
 		String friend = "";
 		System.out.println("Enter the name of the user you would like to send a friend request to:");

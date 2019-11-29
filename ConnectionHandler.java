@@ -275,6 +275,9 @@ public class ConnectionHandler {
         	case 310:
         	    Server.handleSave(message, sock);
         	    break;
+			case 400:
+				Server.handleChangeUsername(message, sock);
+				break;
         		
         default:
             // should never hit this
