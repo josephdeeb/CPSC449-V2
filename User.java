@@ -17,6 +17,7 @@ public class User {
 	// password cannot contain any commas
 	private String password;
 	private ArrayList<Integer> friends;
+	private ArrayList<Integer> friendRequests;
 	private ArrayList<Integer> chats;
 	
 	// Session data (not saved)
@@ -33,6 +34,8 @@ public class User {
 		this.password = password;
 		// List of uID's of friends
 		this.friends = new ArrayList<Integer>();
+		// List of uID's of friend requests
+		this.friendRequests = new ArrayList<Integer>();
 		// List of cID's of chats
 		this.chats = new ArrayList<Integer>();
 	}
@@ -84,6 +87,23 @@ public class User {
 	        chats.add(uID);
 	        return true;
 	    }
+	}
+	
+	public void addFriendRequest(int friendReq) {
+	    if (!friendRequests.contains(friendReq)) {
+	        friendRequests.add(friendReq);
+	    }
+	}
+	
+	// this could be a source of bugs
+	public void removeFriendRequest(int friendReq) {
+	    if (friendRequests.contains(friendReq)) {
+	        friendRequests.remove((Integer)friendReq);
+	    }
+	}
+	
+	public ArrayList<Integer> getFriendRequests() {
+	    return friendRequests;
 	}
 	
 	public int validate(String name, String pass) {

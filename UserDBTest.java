@@ -20,6 +20,8 @@ public class UserDBTest {
         user4.addFriend(2);
         user4.addFriend(0);
         user1.addFriend(3);
+        user1.addFriendRequest(2);
+        user2.addFriendRequest(3);
         
         HashMap<Integer, User> users = new HashMap<Integer, User>();
         users.put(user1.getuID(), user1);
@@ -39,7 +41,13 @@ public class UserDBTest {
             for (int i : user.getFriends()) {
                 line += Integer.toString(i) + ", ";
             }
-            System.out.println("Friends=" + line.substring(0, line.length()-1) + "\n");
+            System.out.println("Friends=" + line);
+            
+            line = "";
+            for (int i : user.getFriendRequests()) {
+                line += Integer.toString(i) + ", ";
+            }
+            System.out.println("FriendRequests=" + line + "\n");
             line = "";
         }
         

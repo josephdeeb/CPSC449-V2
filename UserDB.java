@@ -73,7 +73,7 @@ public class UserDB extends DB {
 			        if (tempUser == null)
 			            throw new IOException("ERROR: One of the user info lines contains invalid data for username or password");
 			        
-			        // Add the users username and uID to the nameToUIDMap
+			        // Add the user's username and uID to the nameToUIDMap
 			        nameToUIDMap.put(tempUser.getusername(), tempUser.getuID());
 			        
 			        // Set highestuID
@@ -85,8 +85,26 @@ public class UserDB extends DB {
 			        counter++;
 			    }
 			    
-			    // Friends line
 			    else if (counter == 1) {
+                    // If they have no friend requests, increment counter and continue
+                    if (line.trim().equals("")) {
+                        counter++;
+                        continue;
+                    }
+                    
+                    // Otherwise, gather the uID's of their friend requests and add them to tempUser.friendRequests
+                    splitted = line.split(",");
+                    for (String str : splitted) {
+                        // compiler lies, tempUser must be created to get here
+                        tempUser.addFriendRequest(Integer.parseInt(str));
+                    }
+                    
+                    // Increment the counter to get the chats line next
+                    counter++;
+			    }
+			    
+			    // Friends line
+			    else if (counter == 2) {
 			        // If they have no friends, increment counter and continue
 			        if (line.trim().equals("")) {
 			            counter++;
@@ -169,6 +187,20 @@ public class UserDB extends DB {
 		    User user = me.getValue();
 		    // First line is the users uID, username, and password
 		    writer.println(Integer.toString(user.getuID()) + "," + user.getusername() + "," + user.getpassword());
+		    
+		    // Next line is the users friend requests
+		    if (user.getFriendRequests().size() != 0) {
+		        line = "";
+		        for (Integer friendRequestUID : user.getFriendRequests()) {
+		            line += Integer.toString(friendRequestUID) + ",";
+		        }
+		        // Get rid of the last comma
+		        line = line.substring(0, line.length()-1);
+		        writer.println(line);
+		    }
+		    else {
+		        writer.println("");
+		    }
 		    
 		    // Next line is the users friends list
 		    // For each friend in the users friends list, append their uID and a comma
