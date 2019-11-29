@@ -12,7 +12,6 @@ public class Client {
     private static boolean running;
     private static ByteBuffer buf;
     public static String username = "";
-    
     public static void main(String[] args) {
         if (args.length != 2) {
             System.out.println("ERROR: Incorrect number of arguments.  Proper usage: java Client [server ip] [server port]");
