@@ -243,6 +243,10 @@ public class ConnectionHandler {
             case 18:
                 Server.handleAddChatUser(message, sock);
                 break;
+            // remove chat user
+            case 19:
+                Server.handleRemoveChatUser(message, sock);
+                break;
             // get chat list
             case 20:
                 Server.handleGetChatList(message, sock);

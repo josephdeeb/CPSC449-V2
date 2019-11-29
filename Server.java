@@ -597,7 +597,7 @@ public class Server {
         connectionHandler.sendMessage(sock,  (short)0);
 
     }
-    //TODO add return messages
+
 	public static void handleAddChatUser(ByteBuffer message, SocketChannel sock) {
         int CID = message.getInt();
         int UID = message.getInt();
@@ -621,8 +621,26 @@ public class Server {
             // Send you are not a member message
             connectionHandler.sendMessage(sock, (short)2);
         }
-
 	}
+
+    public static void handleRemoveChatUser(ByteBuffer message, SocketChannel sock) {
+        int CID = message.getInt();
+        int UID = message.getInt();
+        int SUID = socketToUIDMap.get(sock);
+        ChatDB cdb = chats.get(CID);
+        ArrayList<Integer> chatUsers = cdb.getUsers();
+        if (chatUsers.contains(UID)) {
+            if (chatUsers.get(0) == SUID) {
+                cdb.removeUser(UID);
+                cdb.saveChat();
+                User removeUser = users.getUser(UID);
+                removeUser.removeChat(CID);
+                saveUsers();
+                connectionHandler.sendMessage(sock, (short)1);
+            }
+        }
+        connectionHandler.sendMessage(sock, (short)-1);
+    }
 
 	public static void handleGetChatList(ByteBuffer message, SocketChannel sock) {
         User sockUser = users.getUser(socketToUIDMap.get(sock));

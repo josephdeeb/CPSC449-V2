@@ -86,6 +86,10 @@ public class Client {
                 nextUI = parseAddUser();
                 break;
 
+            case "removeuser":
+                nextUI = parseRemoveUser();
+                break;
+
             case "friendslist":
                 nextUI = parseFriendsList();
                 break;
@@ -433,7 +437,31 @@ public class Client {
             System.out.println("Something went wrong!");
         }
         if (type == 1) {
-            System.out.println("User added successfully!");
+            System.out.println("User " + id + " added successfully!");
+        }
+        if (type == 2) {
+            System.out.println("You can't do that action");
+        }
+        return "chatselected";
+    }
+
+    private static String parseRemoveUser() {
+        UIPacket temp = ui.removeUser();
+        int id = Integer.parseInt(temp.args[0]);
+        buf.clear();
+        buf.putShort((short)19);
+        buf.putInt(currentChatID);
+        buf.putInt(id);
+        buf.flip();
+        clientConnectionHandler.sendMessage(buf);
+
+        ByteBuffer response = clientConnectionHandler.receiveMessage();
+        short type = response.getShort();
+        if (type == -1) {
+            System.out.println("Something went wrong!");
+        }
+        if (type == 1) {
+            System.out.println("User " + id + " removed successfully!");
         }
         if (type == 2) {
             System.out.println("You can't do that action");

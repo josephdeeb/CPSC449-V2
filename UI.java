@@ -419,7 +419,7 @@ public class UI {
         System.out.println("Please choose one of the following options: ");
         System.out.println("-1\t: Chats Menu");
         System.out.println("0\t: Add User");
-        System.out.println("1\t: Placeholder");
+        System.out.println("1\t: Remove User");
         System.out.println("2\t: Placeholder");
 
         try {
@@ -439,7 +439,7 @@ public class UI {
             case 0:
                 return new UIPacket("adduser");
             case 1:
-                return new UIPacket("");
+                return new UIPacket("removeuser");
             case 2:
                 return new UIPacket("");
             default:
@@ -465,5 +465,11 @@ public class UI {
         System.out.println("Enter the ID of the user to be added");
         int ID = Integer.parseInt(input.nextLine());
         return new UIPacket("adduser", new String[] {String.valueOf(ID)});
+    }
+
+    public UIPacket removeUser() {
+        System.out.println("Enter the ID of the user to be removed");
+        int ID = Integer.parseInt(input.nextLine());
+        return new UIPacket("removeuser", new String[] {String.valueOf(ID)});
     }
 }
