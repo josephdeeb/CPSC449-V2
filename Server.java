@@ -432,16 +432,32 @@ public class Server {
 	public static void handleCreateChat(ByteBuffer message, SocketChannel sock) {
         int len = message.getInt();
         String chatName = connectionHandler.retrieveString(message, len);
-
         String chatPath = "" + File.separator + ChatDB.folderName;
+
+        try {
+            File folder = new File(chatPath);
+            if (!folder.exists()) {
+                if (!folder.mkdir())
+                    throw new IOException("ERROR: Could not create folder for ChatDB");
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
         int CID = new File (chatPath).list().length;
 
-        ChatDB.create("", CID, chatName);
-        ChatDB cdb = ChatDB.loadChat(chatPath, CID);
 
-        cdb.addUser(socketToUIDMap.get(sock));
+        ChatDB cdb = ChatDB.create("", CID, chatName);
+
+        int UID = socketToUIDMap.get(sock);
+        cdb.addUser(UID);
         cdb.saveChat();
         chats.put(CID, cdb);
+
+        User sockUser = users.getUser(UID);
+        sockUser.addChat(CID);
+
+        connectionHandler.sendMessage(sock,  (short)0);
 
         //TODO add return message
     }
@@ -458,6 +474,8 @@ public class Server {
         }
         if (chatUsers.contains(SUID)) {
             cdb.addUser(UID);
+            User addUser = users.getUser(UID);
+            addUser.addChat(CID);
             // Send success message
         }
         else {
