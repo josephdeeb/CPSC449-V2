@@ -137,13 +137,8 @@ public class UI {
         System.out.println("5\t: TEMP upload");
         System.out.println("6\t: TEMP download");
         try {
-<<<<<<< HEAD
-            selection = input.nextInt();
-            if (selection < 1 || selection > 6)
-=======
             selection = Integer.parseInt(input.nextLine());
-            if (selection < 1 || selection > 4)
->>>>>>> branch 'master' of git@github.com:josephdeeb/CPSC449-V2.git
+            if (selection < 1 || selection > 6)
                 throw new IOException("ERROR: You did not type a number associated with an available option.");
         } catch (Exception e) {
             System.out.println(e);
