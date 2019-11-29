@@ -164,7 +164,7 @@ public class Server {
 		else{
 			Integer uIDofTheUser= users.nameToUIDMap.remove(uID);
 			users.nameToUIDMap.put(userInfo, uIDofTheUser);
-			
+			return true;
 		}
 		
 	}
@@ -592,6 +592,7 @@ public class Server {
 
         User sockUser = users.getUser(UID);
         sockUser.addChat(CID);
+        users.saveAllUsers();
 
         connectionHandler.sendMessage(sock,  (short)0);
 

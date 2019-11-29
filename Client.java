@@ -76,6 +76,10 @@ public class Client {
                 nextUI = parseChatsList();
                 break;
 
+            case "chatselected":
+                nextUI = parseChatSelected();
+                break;
+
             case "friendslist":
                 nextUI = parseFriendsList();
                 break;
@@ -143,7 +147,9 @@ public class Client {
     }
 
 
-	public static String parseChangeUserName(){
+
+
+    public static String parseChangeUserName(){
 		UIPacket temp = ui.changeUsername((short) 0);
 		String msg = temp.args[0];
 		 buf.clear();
@@ -365,12 +371,13 @@ public class Client {
 
         ByteBuffer response = clientConnectionHandler.receiveMessage();
         int chatsize = response.getInt();
-
+        ui.printTitle("Your Chats");
         if (chatsize == 0) {
             System.out.println("You have no chats");
             return "chatsmenu";
         }
         else {
+            System.out.println("-1\t: Go back");
             for (int i = 0; i < chatsize; i++) {
                 int CID = response.getInt();
                 int size = response.getInt();
@@ -393,6 +400,11 @@ public class Client {
             System.out.println("Invalid selection");
             return "chatsmenu";
         }
+    }
+
+    private static String parseChatSelected() {
+
+        return "chatsmenu";
     }
 
     private static String parseDeleteMessage() {
@@ -442,6 +454,7 @@ public class Client {
         }
         return "chatsmenu";
     }
+
     
     private static String parseFriendsList() {
         return null;

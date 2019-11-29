@@ -218,6 +218,9 @@ public class UI {
 			input.nextLine();
 			return new UIPacket("accountsettings"); 
 		}
+		else {
+		    return new UIPacket("accountsettings");
+        }
 	}
 	
 	public UIPacket sendFriendRequest(){
@@ -390,21 +393,27 @@ public class UI {
 
     public UIPacket chatsLists() {
         int selection = -2;
-        printTitle("Select a chat");
+        System.out.println("Select a chat: ");
 
-
-        selection = Integer.parseInt(input.nextLine());
+        try {
+            selection = Integer.parseInt(input.nextLine());
+        }
+        catch (Exception e) {
+            System.out.println("Invalid input");
+            return new UIPacket("chatsmenu");
+        }
 
 
         switch (selection) {
             case -1:
-                return new UIPacket("chatsmenu");
+                return new UIPacket("chatslist", new String[] {"-1"});
             default:
                 return new UIPacket("chatselected", new String[]{Integer.toString(selection)});
         }
     }
 
     public UIPacket chatSelected() {
+
         return null;
     }
 

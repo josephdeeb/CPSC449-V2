@@ -80,7 +80,7 @@ public class User {
 	}
 	
 	public boolean addChat(int cID) {
-	    if (chats.contains(uID)) {
+	    if (chats.contains(cID)) {
 	        return false;
 	    }
 	    else {
